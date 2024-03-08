@@ -4,12 +4,144 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NestPals</title>
+    <style>
+      .container {
+        display: flex;
+      }
+
+      .left-grid, .right-grid {
+        display: flex;
+        justify-content: center; /* Horizontally aligns items to the center */
+        align-items: center; /* Vertically aligns items to the center */
+        flex-direction: column; /* Align items vertically */
+        flex: 1;
+        padding: 20px;
+        margin: 10px;
+        border-radius: 50px;
+        height: 300px;
+      }
+
+      .right-grid {
+        margin-top: 50px;
+        flex: 1.5;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        font-size: 25px;
+        color: white;
+      }
+
+      .left-grid {
+        background-color: lightgreen;
+        margin-top: 50px;
+
+      }
+
+      .navbar-expand-lg{
+        margin-bottom:7px;
+      }
+
+      .navbar-nav .nav-link
+      {
+        margin-right: 40px;
+      }
+
+      .body{
+        background-color:lightblue;
+      }
+
+      .content-container{
+        text-align: center;
+        background-color: lightblue;
+      }
+
+      .height{
+        height:3000px;
+        background-image: linear-gradient(rgb(34, 44, 54), rgb(255, 127, 80));
+      } *
+
+      .heading{
+        color:darkblue;
+        font-size: 75px;
+        margin-top: 30px;
+      }
+
+      .synopsis{
+        color:white;
+        background-color:turquoise;
+        font-size: 30px;
+        text-align: center;
+        padding-bottom:5px;
+        padding-top:13px;
+      }
+      
+    </style>
   </head>
   <body>
-    <div class="container py-4 px-3 mx-auto">
-      <h1>Hello, Bootstrap and Vite!</h1>
-      <button class="btn btn-primary">Primary button</button>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#">NestPals
+        <img src="/docs/4.0/assets/brand/bootstrap-solid.svg" width="30" height="30" alt="">
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Chats</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Account
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="#">Action</a>
+              <a class="dropdown-item" href="#">Another action</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#">Something else here</a>
+            </div>
+          </li>
+          <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+          </form>
+
+          <!-- <li class="nav-item">
+            <a class="nav-link disabled" href="#">WIP</a>
+          </li> -->
+          
+        </ul>
+
+      </div>
+    </nav>
+
+    <div class="content-container py-4 px-3 mx-auto">
+      <h1 class = "heading"> NestPals </h1>
+      <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0" class="btn btn-primary">Sign up</a>
     </div>
+
+    <div class="synopsis">
+      <p>
+        Find your ideal roommates today
+      </p>
+    </div>
+
+    <!-- <div class="height">
+    </div> -->
+    <div class="height">
+      <div class="container">
+        <div class="left-grid">
+          <img src="StockPhoto1.png">
+        </div>
+        <div class="right-grid">
+          The aim of NestPals is to connect people through a tailored platform for finding ideal roommates. Whether you seek a tidy cohabitant
+          or a quiet, independent one, our goal is to assist in your search.
+        </div>
+      </div>
+    </div>
+    
+
     <script type="module" src="./js/main.js"></script>
   </body>
 </html>
