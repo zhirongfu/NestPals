@@ -5,15 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NestPals</title>
     <style>
+      .navbar {
+        background-color: white;
+      }
+
+      .navbar-brand {
+        color: darkblue;
+        font-size: 20px;
+      }
+
+      .navbar-nav .nav-link {
+        color: darkblue;
+        margin-right: 20px;
+      }
+
+      .navbar-toggler-icon {
+        background-color: darkblue;
+        background-image: url(imgs/NestPalsLogo.png);
+      }
+
+      .content-container {
+        text-align: center;
+        background-color: lightblue;
+      }
+
+      .heading {
+        color: darkblue;
+        font-size: 75px;
+        margin-top: 30px;
+      }
+
+      .synopsis {
+        color: white;
+        background-color: turquoise;
+        font-size: 30px;
+        text-align: center;
+        padding-bottom: 5px;
+        padding-top: 13px;
+      }
+
       .container {
         display: flex;
       }
 
       .left-grid, .right-grid {
         display: flex;
-        justify-content: center; /* Horizontally aligns items to the center */
-        align-items: center; /* Vertically aligns items to the center */
-        flex-direction: column; /* Align items vertically */
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
         flex: 1;
         padding: 20px;
         margin: 10px;
@@ -32,53 +71,35 @@
       .left-grid {
         background-color: lightgreen;
         margin-top: 50px;
-
       }
 
-      .navbar-expand-lg{
-        margin-bottom:7px;
+      .links {
+        display: flex;
+        justify-content: center;
+        min-height: calc(150%);
       }
 
-      .navbar-nav .nav-link
-      {
-        margin-right: 40px;
+      .Signup, .Login, .Begin {
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        color: white;
+        background-color: transparent;
+        padding: 10px 5px;
+        margin: 40px;
+        font-size: 50px;
+        border: none;
       }
 
-      .body{
-        background-color:lightblue;
-      }
-
-      .content-container{
-        text-align: center;
-        background-color: lightblue;
-      }
-
-      .height{
-        height:3000px;
+      .height {
+        height: 2000px;
         background-image: linear-gradient(rgb(34, 44, 54), rgb(255, 127, 80));
-      } *
-
-      .heading{
-        color:darkblue;
-        font-size: 75px;
-        margin-top: 30px;
       }
 
-      .synopsis{
-        color:white;
-        background-color:turquoise;
-        font-size: 30px;
-        text-align: center;
-        padding-bottom:5px;
-        padding-top:13px;
-      }
-      
     </style>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="#">NestPals
-        <img src="/docs/4.0/assets/brand/bootstrap-solid.svg" width="30" height="30" alt="">
+        <img src="imgs/NestPalsLogo.png" width="30" height="30" alt="">
       </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -132,14 +153,29 @@
     <div class="height">
       <div class="container">
         <div class="left-grid">
-          <img src="StockPhoto1.png">
+          <img src="Downloads/door.png">
         </div>
         <div class="right-grid">
           The aim of NestPals is to connect people through a tailored platform for finding ideal roommates. Whether you seek a tidy cohabitant
           or a quiet, independent one, our goal is to assist in your search.
         </div>
       </div>
+
+      <div class="links">
+        <button class="Signup">
+          Sign Up
+        </button>
+        <button class="Login">
+          Log In
+        </button>
+        <button class="Begin">
+          Begin
+        </button>
+      </div>
     </div>
+    
+
+
     
 
     <script type="module" src="./js/main.js"></script>
