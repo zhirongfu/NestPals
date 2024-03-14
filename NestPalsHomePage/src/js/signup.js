@@ -1,3 +1,21 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
+  authDomain: "nestpals-backend.firebaseapp.com",
+  projectId: "nestpals-backend",
+  storageBucket: "nestpals-backend.appspot.com",
+  messagingSenderId: "377954426735",
+  appId: "1:377954426735:web:92eaef2c3160067572529a"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
 document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("signup-form");
 
