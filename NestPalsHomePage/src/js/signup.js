@@ -1,7 +1,7 @@
 
 import { initializeApp } from "firebase/app";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"; // Import the necessary auth functions
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"; 
+import { getFirestore, collection, getDocs, query, where, addDoc } from "firebase/firestore"; // Import Firestore functions
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,33 +16,11 @@ const firebaseConfig = {
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Storage
-const storage = getStorage(app);
-
 // Initialize Firebase Authentication
 const auth = getAuth(app);
 
-
-// Function to download CSV file from Firebase Storage
-const downloadCSVFile = async (user) => {
-    try {
-        const storageRef = ref(storage, 'signup_data.csv'); // Path to your CSV file in Firebase Storage
-        const url = await getDownloadURL(storageRef, { cors: true });
-        const idToken = await user.getIdToken(); // Get user's authentication token
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${idToken}`
-            },
-            mode: 'cors'
-        });
-        
-       const csvData = await response.text();
-        return csvData;
-    } catch (error) {
-        console.error("Error downloading CSV file:", error.message);
-        return null;
-    }
-};
+// Initialize Firestore
+const db = getFirestore(app);
 
 document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("signup-form");
@@ -64,41 +42,26 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         try {
+            // Check if email already exists
+            const emailQuery = query(collection(db, "users"), where("email", "==", email));
+            const emailSnapshot = await getDocs(emailQuery);
+
+            if (!emailSnapshot.empty) {
+                alert("Email already exists. Please use a different email.");
+                return;
+            }
+
             // Authenticate user using Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Download CSV file from Firebase Storage
-            const csvData = await downloadCSVFile(user);
-
-            if (!csvData) {
-                // Handle case where CSV data couldn't be fetched
-                console.error("Failed to fetch CSV data.");
-                return;
-            }
-
-            // Parse CSV data and check if username or email already exists
-            const rows = csvData.split('\n');
-            let usernameExists = false;
-            let emailExists = false;
-            rows.forEach(row => {
-                const [existingUsername, existingEmail] = row.split(',');
-                if (existingUsername === username) {
-                    usernameExists = true;
-                }
-                if (existingEmail === email) {
-                    emailExists = true;
-                }
+            // Push email and username to Firestore "users" collection
+            await addDoc(collection(db, "users"), {
+                username: username,
+                email: email
             });
 
-            // If username or email exists, prevent signup and display error message
-            if (usernameExists || emailExists) {
-                alert("Username or email already exists. Please choose a different one.");
-                return;
-            }
-
-            // Otherwise, proceed with user signup using Firebase Authentication
-            await createUserWithEmailAndPassword(auth, email, password);
+            // If signup is successful, alert the user and optionally redirect to another page
             alert("Sign up successful!");
 
             // Redirect to survey.html
