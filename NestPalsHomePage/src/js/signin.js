@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
-// Your web app's Firebase configuration
+//our web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
     authDomain: "nestpals-backend.firebaseapp.com",
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
             alert("Sign in successful!");
 
             // Redirect to another page
-            window.location.href = "dashboard.html"; // Replace "dashboard.html" with your desired destination
+            window.location.href = "dashboard.html"; //not yet set on where to redirect
 
         } catch (error) {
             // Handle error
