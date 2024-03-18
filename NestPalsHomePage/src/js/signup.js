@@ -51,6 +51,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
+            // Check if username already exists
+            const usernameQuery = query(collection(db, "users"), where("username", "==", username));
+            const usernameSnapshot = await getDocs(usernameQuery);
+
+            if (!usernameSnapshot.empty) {
+                alert("Username already exists. Please choose a different username.");
+                return;
+            }
+
             // Authenticate user using Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
