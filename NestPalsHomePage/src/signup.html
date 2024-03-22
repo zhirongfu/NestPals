@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-signin-client_id" content="630038648737-et0vimlmiicfif7gshrk4cnthh162j58.apps.googleusercontent.com">
     <title>Sign Up</title>
     <style>
         body {
@@ -73,10 +74,13 @@
             <input type="password" id="confirm-password" name="confirm-password" required>
 
             <button type="submit">Sign Up</button>
+            
+            <div class="g-signin2" data-onsuccess="onSignIn"></div>
         </form>
     </div>
 
     <script type="module" src="js/signup.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.1.1/firebase-app.js"></script>
     <script type="module" qsrc="https://www.gstatic.com/firebasejs/9.1.1/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.1.1/firebase-firestore.js"></script>

@@ -17,6 +17,8 @@
   "dependencies": {
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
-    "firebase": "^10.9.0"
+    "firebase": "^10.9.0",
+    "gapi-script": "^1.2.0",
+    "react-google-login": "^5.2.2"
   }
 }

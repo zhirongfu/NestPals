@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .profile img {
+            width: 200px; /* Adjust image width as needed */
+            height: auto;
+            border-radius: 50%;
+            margin-right: 20px; /* Adjust spacing between image and bio */
+        }
+
+        .bio {
+            font-size: 16px;
+        }
+
+        .name-input {
+            font-size: 16px;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile">
+            <img src="your-image.jpg" alt="Profile Image">
+            <div class="bio">
+                <input type="text" id="name-input" class="name-input" placeholder="Enter your name">
+                <p id="user-name">Your Name</p>
+                <p>
+                    Bio here.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to update the user name when input changes
+        const nameInput = document.getElementById('name-input');
+        const userName = document.getElementById('user-name');
+
+        nameInput.addEventListener('input', function() {
+            userName.textContent = this.value || 'Your Name';
+        });
+    </script>
+</body>
+</html>
