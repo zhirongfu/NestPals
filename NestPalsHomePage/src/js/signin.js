@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
             alert("Sign in successful!");
 
             // Redirect to another page
-            window.location.href = "dashboard.html"; //not yet set on where to redirect
+            window.location.href = "roomatequestionares.html"; //not yet set on where to redirect
 
         } catch (error) {
             // Handle error

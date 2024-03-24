@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function() {
             alert("Sign up successful!");
 
             // Redirect to survey.html
-            window.location.href = "roomatequestionares.html";
+            window.location.href = "signin.html";
 
         } catch (error) {
             // Handle error
