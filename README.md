@@ -23,3 +23,10 @@ Confirm it's properly installed by running 'git version' in an open command prom
 
 5. If installed correctly, git should handle the downloading of all files into the specified folder by itself.
 ![image](https://github.com/MikeK-003/NestPals/assets/102551944/03802a63-91b4-4a12-abb7-cdb626aead84)
+
+# Installing vite
+The next step is to be able to properly run the app using Vite.
+
+1. Download and install Node.js from https://nodejs.org/en
+   Confirm it's properly installed by running 'node -v' in the command prompt.
+![image](https://github.com/MikeK-003/NestPals/assets/102551944/e8772674-a64a-4cd2-bef6-9c97fa6767ef)
