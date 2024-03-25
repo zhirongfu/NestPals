@@ -15,4 +15,11 @@ Confirm it's properly installed by running 'git version' in an open command prom
 2. In the repo homepage, click on the green '<> Code' button.
 ![image](https://github.com/MikeK-003/NestPals/assets/102551944/e53ed27e-5a6a-4304-81ef-5ae8a3f19abe)
 
-3. ![image](https://github.com/MikeK-003/NestPals/assets/102551944/9c3fc170-f8f0-4c5e-a831-08b966cb0ef8)
+3. You have the choice of downloading all the files as-is, or you can copy the git repository link.
+![image](https://github.com/MikeK-003/NestPals/assets/102551944/8d971172-1927-4588-b742-a3ca8961086e)
+
+4. In Command Prompt, navigate to an empty folder of your choice to install the project in, and type
+   `git clone https://github.com/MikeK-003/NestPals.git` using the copied link.
+
+5. If installed correctly, git should handle the downloading of all files into the specified folder by itself.
+![image](https://github.com/MikeK-003/NestPals/assets/102551944/03802a63-91b4-4a12-abb7-cdb626aead84)
