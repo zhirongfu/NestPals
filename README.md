@@ -32,8 +32,9 @@ https://getbootstrap.com/docs/5.2/getting-started/vite/#project-structure
 1. Download and install Node.js from https://nodejs.org/en
 Confirm it's properly installed by running 'node -v' and 'npm -v' in the command prompt.
 ![image](https://github.com/MikeK-003/NestPals/assets/102551944/e8772674-a64a-4cd2-bef6-9c97fa6767ef)
+![image](https://github.com/MikeK-003/NestPals/assets/102551944/990c95eb-a61e-4c36-9644-9cc345f7a71f)
 
-2. There is no need to do any work in installing any dependencies or making sure the project has the correct structures.
+3. There is no need to do any work in installing any dependencies or making sure the project has the correct structures.
 All that has already been taken care of.
 
 4. Navigate to the homepage directory by typing in `cd NestPalsHomePage`.
