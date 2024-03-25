@@ -19,14 +19,18 @@ Confirm it's properly installed by running 'git version' in an open command prom
 ![image](https://github.com/MikeK-003/NestPals/assets/102551944/8d971172-1927-4588-b742-a3ca8961086e)
 
 4. In Command Prompt, navigate to an empty folder of your choice to install the project in, and type
-   `git clone https://github.com/MikeK-003/NestPals.git` using the copied link.
+`git clone https://github.com/MikeK-003/NestPals.git` using the copied link.
 
-5. If installed correctly, git should handle the downloading of all files into the specified folder by itself.
+6. If installed correctly, git should handle the downloading of all files into the specified folder by itself.
 ![image](https://github.com/MikeK-003/NestPals/assets/102551944/03802a63-91b4-4a12-abb7-cdb626aead84)
 
 # Installing vite
 The next step is to be able to properly run the app using Vite.
 
 1. Download and install Node.js from https://nodejs.org/en
-   Confirm it's properly installed by running 'node -v' in the command prompt.
+   Confirm it's properly installed by running 'node -v' and 'npm -v' in the command prompt.
 ![image](https://github.com/MikeK-003/NestPals/assets/102551944/e8772674-a64a-4cd2-bef6-9c97fa6767ef)
+
+2. In the terminal (I am using Visual Studio Code), type the following commands in succession.
+`npm init -y`
+
