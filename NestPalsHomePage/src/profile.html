@@ -9,13 +9,14 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background-image: linear-gradient(rgb(34, 44, 54), rgb(255, 127, 80));
         }
 
         .container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            top: 0;
+            left: 0;
+            /*border: 5px solid black; /* Set border width and color */
+            padding: 50px; /* Set padding */
         }
 
         .profile {
@@ -32,6 +33,8 @@
 
         .bio {
             font-size: 16px;
+            display: flex;
+            align-items: center;
         }
 
         .name-input {
@@ -39,29 +42,108 @@
             padding: 5px;
             margin-bottom: 10px;
         }
+        
+        .preferences {
+            /*border: 5px solid black; /* Set border width and color */
+            margin-left: 5vh;
+            margin-top: 15vh;
+        }
+        
+        .preferences input{
+            width: 50vh;
+            height: 4vh;
+            margin-bottom: 10px;
+            margin-top: 10px;
+            font-family: Arial;
+            font-size: 15px;
+        }
+
+        .preferences p{
+            margin-bottom: 5px;
+            color:white;
+            font-size: 20px;
+            font-family: Arial;
+        }
+
+        .edit-btn {
+            margin-left: 10px;
+            cursor: pointer;
+            text-decoration: underline;
+            color: blue;
+            display: none; /* Initially hide the edit button */
+            transition: color 0.3s; /* Add transition for smooth effect */
+        }
+
+        .edit-btn:hover {
+            color: darkblue; /* Change color on hover */
+        }
+        
+        
     </style>
 </head>
 <body>
     <div class="container">
         <div class="profile">
-            <img src="your-image.jpg" alt="Profile Image">
-            <div class="bio">
-                <input type="text" id="name-input" class="name-input" placeholder="Enter your name">
-                <p id="user-name">Your Name</p>
-                <p>
-                    Bio here.
+            <img src="imgs/StockPhoto1.png" alt="Profile Image">
+            <div class="bio" id="bio-section">
+                <p id="user-name">
+                    <!-- Initially empty; populated dynamically by JavaScript -->
                 </p>
+                <input type="text" id="name-input" class="name-input" placeholder="Enter your name">
+                <button class="edit-btn" id="edit-btn">Edit</button>
             </div>
+        </div>
+        <div class="preferences">
+            <p>
+                Gender
+            </p>
+            <input type="text" placeholder="Enter Gender">
+            <p>
+                State
+            </p>
+            <input type="text" placeholder="State">
+            <p>
+                City
+            </p>
+            <input type="text" placeholder="City">
+            <p>
+                Monthly Budget
+            </p>
+            <input type="text" placeholder="Monthly Budget">
+            <p>
+                Smoking Preference
+            </p>
+            <input type="text" placeholder="Smoking Preference">
+            <p>
+                Pets
+            </p>
+            <input type="text" placeholder="Pets">
         </div>
     </div>
 
     <script>
-        // JavaScript to update the user name when input changes
+        // JavaScript to update the user name when Enter key is pressed
         const nameInput = document.getElementById('name-input');
         const userName = document.getElementById('user-name');
+        const editButton = document.getElementById('edit-btn');
 
-        nameInput.addEventListener('input', function() {
-            userName.textContent = this.value || 'Your Name';
+        nameInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                const enteredName = this.value.trim(); // Remove leading/trailing whitespace
+                if (enteredName !== '') {
+                    userName.textContent = enteredName;
+                    nameInput.style.display = 'none'; // Hide the input field
+                    userName.style.display = 'inline'; // Show the displayed name
+                    editButton.style.display = 'inline'; // Show the edit button
+                }
+            }
+        });
+
+        editButton.addEventListener('click', function() {
+            nameInput.style.display = 'block'; // Show the input field
+            userName.style.display = 'none'; // Hide the displayed name
+            editButton.style.display = 'none'; // Hide the edit button
+            nameInput.focus(); // Focus on the input field for editing
         });
     </script>
 </body>
