@@ -8,9 +8,7 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const admin = require("firebase-admin");
 
-var admin = require("firebase-admin");
-
-var serviceAccount = require("path/to/serviceAccountKey.json");
+const serviceAccount = require("./serviceAccountKey.json"); //need jason to fill in the quoted line with correct
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)

@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function() {
             // If signup is successful, alert the user and optionally redirect to another page
             alert("Sign up successful!");
 
-            // Redirect to survey.html
+            // Redirect to signin.html to formally login and use cookie tracking
             window.location.href = "signin.html";
 
         } catch (error) {
