@@ -35,7 +35,7 @@ if (!user) {
   alert('You must be signed in to submit the questionnaire.');
   return;
 }
-console.log(user.uid);
+//console.log(user.uid);
 
   // Get form values
 
