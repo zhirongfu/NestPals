@@ -10,7 +10,7 @@ const firebaseConfig = {
     storageBucket: "nestpals-backend.appspot.com",
     messagingSenderId: "377954426735",
     appId: "1:377954426735:web:92eaef2c3160067572529a"
-  };
+};
 
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);

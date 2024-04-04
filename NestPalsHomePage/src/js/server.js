@@ -1,14 +1,19 @@
+import express from 'express';
+import * as admin from 'firebase-admin';
+import  credentials  from '../serviceAccountkey.json';
+
 const cookieParser = require("cookie-parser");
 const csrf = require("csurf");
 const bodyParser = require("body-parser");
 const express = require("express");
 const admin = require("firebase-admin");
 
-const serviceAccount = require("./serviceAccountKey.json"); //need jason to fill in the quoted line with correct
+var admin = require("firebase-admin");
+
+var serviceAccount = require("path/to/serviceAccountKey.json");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "#",//need jason to imput this and also to add service account.json file fron his fb 
+  credential: admin.credential.cert(serviceAccount)
 });
 
 const csrfMiddleware = csrf({ cookie: true });

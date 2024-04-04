@@ -1,17 +1,16 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"; 
-import { getFirestore, collection, getDocs, query, where, addDoc } from "firebase/firestore"; // Import Firestore functions
+import { getFirestore, collection, getDocs, query, where, addDoc,doc,setDoc } from "firebase/firestore"; // Import Firestore functions
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
-  authDomain: "nestpals-backend.firebaseapp.com",
-  projectId: "nestpals-backend",
-  storageBucket: "nestpals-backend.appspot.com",
-  messagingSenderId: "377954426735",
-  appId: "1:377954426735:web:92eaef2c3160067572529a"
+    apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
+    authDomain: "nestpals-backend.firebaseapp.com",
+    projectId: "nestpals-backend",
+    storageBucket: "nestpals-backend.appspot.com",
+    messagingSenderId: "377954426735",
+    appId: "1:377954426735:web:92eaef2c3160067572529a"
 };
-
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
@@ -62,9 +61,9 @@ document.addEventListener("DOMContentLoaded", function() {
             // Authenticate user using Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-
+            const userDocRef = doc(db, "users", user.uid);
             // Push email and username to Firestore "users" collection
-            await addDoc(collection(db, "users"), {
+            await setDoc(userDocRef, {
                 username: username,
                 email: email
             });
