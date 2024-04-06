@@ -1,12 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-// Dynamically create a script element for Font Awesome and append it to the document's head
-const fontAwesomeScript = document.createElement('script');
-fontAwesomeScript.src = 'https://kit.fontawesome.com/5194cba8a8.js';
-fontAwesomeScript.crossOrigin = 'anonymous';
-document.head.appendChild(fontAwesomeScript);
-
 // Wrap your code to ensure the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
     let profileDropdownList = document.querySelector(".profile-dropdown-list");
