@@ -1,18 +1,20 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; 
-import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 //our web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
-    authDomain: "nestpals-backend.firebaseapp.com",
-    projectId: "nestpals-backend",
-    storageBucket: "nestpals-backend.appspot.com",
-    messagingSenderId: "377954426735",
-    appId: "1:377954426735:web:92eaef2c3160067572529a"
+  apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
+  authDomain: "nestpals-backend.firebaseapp.com",
+  projectId: "nestpals-backend",
+  storageBucket: "nestpals-backend.appspot.com",
+  messagingSenderId: "377954426735",
+  appId: "1:377954426735:web:92eaef2c3160067572529a"
 };
-
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
+
+// Initialize Firestore
+const db = getFirestore(app);
 
 // Initialize Firebase Authentication
 const auth = getAuth(app);
@@ -27,24 +29,30 @@ document.addEventListener("DOMContentLoaded", function() {
         // Retrieve form input values
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
-      
 
         try {
             // Authenticate user using Firebase Authentication
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            const token = await user.getIdToken();
 
-            // If sign-in is successful, alert the user and optionally redirect to another page
-            alert("Sign in successful!");
+            // Query Firestore for the user's document
+            const userDocRef = doc(db, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
 
-            // Redirect to another page
-            window.location.href = "roomatequestionares.html"; //not yet set on where to redirect
+            if (userDocSnap.exists() && userDocSnap.data().name) {
+                // If the user's name exists in the Firestore document
+                // Redirect to the matching.html page
+                window.location.href = "matching.html";
+            } else {
+                // If the user's name does not exist in the Firestore document
+                // Redirect to the roomatequestionares.html page
+                window.location.href = "roomatequestionares.html";
+            }
 
         } catch (error) {
-            // Handle error
-            console.error("Error signing in:", error.message);
-            alert("Error signing in. Please check your email and password.");
+            // Handle errors for authentication and Firestore query
+            console.error("Error during sign in or querying the database:", error.message);
+            alert("Error during sign in. Please check your email, password, or try again later.");
         }
     });
 });

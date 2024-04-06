@@ -2,7 +2,6 @@ import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"; 
 import { getFirestore, collection, getDocs, query, where, addDoc,doc,setDoc } from "firebase/firestore"; // Import Firestore functions
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
     authDomain: "nestpals-backend.firebaseapp.com",
