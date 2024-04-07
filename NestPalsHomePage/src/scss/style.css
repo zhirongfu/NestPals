@@ -87,13 +87,17 @@ body {
   background-color: var(--secondary-light-2);
   box-shadow: var(--shadow);
 }
-
+#profile-pfp {
+    max-width: 20px;
+    max-height: 20px;
+    border-radius: 50%;
+    z-index: 2;
+}
 .profile-img {
   position: relative;
   width: 3rem;
   height: 3rem;
   border-radius: 50%;
-  background: url(./assets/profile-pic.jpg);
   background-size: cover;
 }
 
@@ -186,10 +190,12 @@ body {
   }
   
   .profile-item img {
-    width: 100%;
     border-radius: 50%;
     left: 10px;
     top: 20px;
+    max-width: 70px;
+    max-height: 100px;
+
   }
   
   .profile-item .name {

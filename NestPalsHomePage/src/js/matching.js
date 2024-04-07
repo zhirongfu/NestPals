@@ -1,6 +1,21 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+const firebaseConfig = {
+  apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
+  authDomain: "nestpals-backend.firebaseapp.com",
+  projectId: "nestpals-backend",
+  storageBucket: "nestpals-backend.appspot.com",
+  messagingSenderId: "377954426735",
+  appId: "1:377954426735:web:92eaef2c3160067572529a"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
 // Wrap your code to ensure the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
     let profileDropdownList = document.querySelector(".profile-dropdown-list");
@@ -18,22 +33,22 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!btn.contains(e.target)) {
         classList.remove("active");
       }
+    const edit= document.querySelector('.EditProfile');
+    if(edit){
+      edit.addEventListener('click', function(event){
+        event.preventDefault();
+        window.location.href ='profile.html';
+      })
+    }
+    const lo=this.document.getElementById('logout');
+    lo.addEventListener('click',function(event){
+      event.preventDefault();
+      signOut(auth).then(()=>{
+        window.location.href='index.html';
+      })
+    })
     });
   });
-const firebaseConfig = {
-    apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
-    authDomain: "nestpals-backend.firebaseapp.com",
-    projectId: "nestpals-backend",
-    storageBucket: "nestpals-backend.appspot.com",
-    messagingSenderId: "377954426735",
-    appId: "1:377954426735:web:92eaef2c3160067572529a"
-};
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
   onAuthStateChanged(auth, (user) => {
     if (user) {
       // User is signed in, fetch their name
@@ -52,15 +67,44 @@ const firebaseConfig = {
       });
     } else {
       // Handle user not signed in or other actions
+      window.location.href='signin.html';
     }
   });
   // Function to create a profile card
-function createProfileCard(user) {
+async function createProfileCard(user) {
     const profileItem = document.createElement('div');
     profileItem.className = 'profile-item';
   
     const img = document.createElement('img');
-    img.src = user.profilepic || 'default-avatar.png'; // Placeholder if no photo
+    img.className="pfp";
+    // Assuming user has a uid field
+    if (user.uid) {
+        try {
+            const docRef = doc(db, "pfp", user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists() && docSnap.data().filePath) {
+                const filePath = docSnap.data().filePath;
+                const fileRef = storageRef(storage, filePath);
+
+                // Use getDownloadURL to fetch the actual URL
+                const url = await getDownloadURL(fileRef);
+                img.src = url;
+            } 
+            else {
+                console.log("Document or filePath field missing");
+                img.src = 'default-avatar.png'; // Fallback image
+            }
+        } 
+        catch (error) {
+            console.error("Error fetching image URL:", error);
+            img.src = 'default-avatar.png'; // Fallback image on error
+        }
+    } 
+    else {
+        console.error("User UID is undefined.");
+        img.src = 'default-avatar.png'; // Fallback image if user UID is undefined
+    }
+
     profileItem.appendChild(img);
   
     const name = document.createElement('div');
@@ -100,16 +144,54 @@ function createProfileCard(user) {
   // Function to fetch profiles from Firestore
   async function fetchProfiles() {
     const profilesRef = collection(db, 'users');
-    // Assuming you want to find users with a defined budget and looking for roommates in 'NY'
     const q = query(profilesRef, where('budget', '!=', ''));
     const querySnapshot = await getDocs(q);
-  
-    const profileContainer = document.querySelector('.profile-container');
-    querySnapshot.forEach((doc) => {
-      const user = doc.data();
-      const profileCard = createProfileCard(user);
-      profileContainer.appendChild(profileCard);
-    });  
+    const currentUser = auth.currentUser;
+  const profileContainer = document.querySelector('.profile-container');
+  const profileCardsPromises = querySnapshot.docs
+    .filter(doc => doc.id !== currentUser.uid) // Filter out the current user's document
+    .map(doc => {
+      const user = { ...doc.data(), uid: doc.id }; // Include uid in the user object
+      return createProfileCard(user); // Return the promise created by createProfileCard
+    });
+
+  // Wait for all profile cards to be created
+  const profileCards = await Promise.all(profileCardsPromises);
+
+  // Append all profile cards to the container at once
+  profileCards.forEach(profileCard => {
+    profileContainer.appendChild(profileCard);
+  });
+}
+async function setUserProfilePictureAsNavbarLogo(userId) {
+  try {
+    const docRef = doc(db, "pfp", userId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists() && docSnap.data().filePath) {
+      const filePath = docSnap.data().filePath;
+      const fileRef = storageRef(storage, filePath);
+      const url = await getDownloadURL(fileRef);
+
+      const profileImgDiv = document.querySelector('.profile-img');
+      if (profileImgDiv) {
+        profileImgDiv.style.backgroundImage = `url('${url}')`;
+        profileImgDiv.style.backgroundSize = 'cover';
+        profileImgDiv.style.backgroundPosition = 'center';
+      }
+    } else {
+      console.log("Document or filePath field missing");
+    }
+  } catch (error) {
+    console.error("Error fetching image URL:", error);
   }
-  
-  document.addEventListener('DOMContentLoaded', fetchProfiles);
+}
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Now that we have a confirmed user, call fetchProfiles or pass the user down
+        fetchProfiles(); // If fetchProfiles doesn't directly use auth.currentUser
+        setUserProfilePictureAsNavbarLogo(user.uid);
+    } 
+    else {
+        window.location.href='signin.html';
+    }
+});

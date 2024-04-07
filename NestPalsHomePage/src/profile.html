@@ -16,7 +16,7 @@
             top: 0;
             left: 0;
             /*border: 5px solid black; /* Set border width and color */
-            padding: 50px; /* Set padding */
+            padding: 69px; /* Set padding */
         }
 
         .profile {
@@ -26,7 +26,7 @@
 
         .profile img {
             width: 200px; 
-            height: auto;
+            height: 200px;
             border-radius: 50%;
             margin-right: 20px; 
         }
@@ -64,18 +64,22 @@
             font-size: 20px;
             font-family: Arial;
         }
-
+        .fileuploadcontainer {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Align items to the start of the container */
+        }
         .edit-btn {
-            margin-left: 10px;
+            margin-top: 10px;
             cursor: pointer;
             text-decoration: underline;
-            color: blue;
-            display: none; /* Initially hide the edit button */
+            background-color: rgb(169, 25, 162);
             transition: color 0.3s; /* Add transition for smooth effect */
+            border-radius: 10%;
         }
 
         .edit-btn:hover {
-            color: darkblue; /* Change color on hover */
+            background-color: darkblue; /* Change color on hover */
         }
         
         
@@ -84,20 +88,18 @@
 <body>
     <div class="container">
         <div class="profile">
-            <img src="imgs/StockPhoto1.png" alt="Profile Image">
+            <img src="" id='uploadimg' alt="Profile Image">
             <div class="bio" id="bio-section">
                 <p id="user-name">
                     <!-- Initially empty; populated dynamically by JavaScript -->
                 </p>
-                <input type="text" id="name-input" class="name-input" placeholder="Enter your name">
-                <button class="edit-btn" id="edit-btn">Edit</button>
+                <div class="fileuploadcontainer">
+                <input type="file" id="uploadpfp" accept="Image/png, Image/jpeg">
+                <button class="edit-btn" id="edit-btn">Upload Image</button>
+                </div>
             </div>
         </div>
         <div class="preferences">
-            <p>
-                Gender
-            </p>
-            <input type="text" placeholder="Enter Gender">
             <p>
                 State
             </p>
@@ -110,41 +112,9 @@
                 Monthly Budget
             </p>
             <input type="text" placeholder="Monthly Budget">
-            <p>
-                Smoking Preference
-            </p>
-            <input type="text" placeholder="Smoking Preference">
-            <p>
-                Pets
-            </p>
-            <input type="text" placeholder="Pets">
         </div>
     </div>
 
-    <script>
-        // JavaScript to update the user name when Enter key is pressed
-        const nameInput = document.getElementById('name-input');
-        const userName = document.getElementById('user-name');
-        const editButton = document.getElementById('edit-btn');
-
-        nameInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                const enteredName = this.value.trim(); // Remove leading/trailing whitespace
-                if (enteredName !== '') {
-                    userName.textContent = enteredName;
-                    nameInput.style.display = 'none'; // Hide the input field
-                    userName.style.display = 'inline'; // Show the displayed name
-                    editButton.style.display = 'inline'; // Show the edit button
-                }
-            }
-        });
-
-        editButton.addEventListener('click', function() {
-            nameInput.style.display = 'block'; // Show the input field
-            userName.style.display = 'none'; // Hide the displayed name
-            editButton.style.display = 'none'; // Hide the edit button
-            nameInput.focus(); // Focus on the input field for editing
-        });
-    </script>
+    <script type="module" src="js/profile.js"></script>
 </body>
 </html>
