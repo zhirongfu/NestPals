@@ -69,6 +69,7 @@ if (!user) {
     interests: interests
   },{ merge: true });; 
     alert("Questionnaire submitted successfully!");
+    window.location.href="matching.html";
     document.getElementById('questionnaire-form').reset();
 } catch (error) {
     console.error("Error submitting questionnaire: ", error);
