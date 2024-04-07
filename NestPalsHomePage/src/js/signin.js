@@ -55,7 +55,33 @@ document.addEventListener("DOMContentLoaded", function() {
             alert("Error during sign in. Please check your email, password, or try again later.");
         }
     });
+    const googleSignInButton = document.querySelector('.g-signin2');
+
+    googleSignInButton.addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+
+        try {
+            // Sign in with Google popup
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            // Save user ID to Firestore
+            const userDocRef = doc(db, "users", user.uid);
+            const userData = {
+                userId: user.uid
+            };
+
+            await setDoc(userDocRef, userData);
+
+            console.log("User ID stored in Firestore:", user.uid);
+            alert("Signed in successfully with Google!");
+        } catch (error) {
+            console.error("Google sign-in error:", error.message);
+            alert("Google sign-in failed. Please try again.");
+        }
+    });
 });
+
 /*
 window.addEventListener("DOMContentLoaded", () => {
   const firebaseConfig = {
