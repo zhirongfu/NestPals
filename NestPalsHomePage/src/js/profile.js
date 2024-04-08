@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth,onAuthStateChanged } from 'firebase/auth';
-import { setDoc,getDoc } from 'firebase/firestore';
-import { getFirestore, collection, getDocs, query, where, addDoc, doc, updateDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, collection, query, where } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 //our Firebase configuration
@@ -13,13 +12,18 @@ const firebaseConfig = {
     messagingSenderId: "377954426735",
     appId: "1:377954426735:web:92eaef2c3160067572529a"
 };
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
 // Initialize services
 const db = getFirestore(app);
 const auth = getAuth(app);
+
 const user = auth.currentUser;
+
 const storage = getStorage(app);
+
 async function uploadImg() {
     const fileInput = document.getElementById('uploadpfp');
     const file = fileInput.files[0]; // Get the file from input
@@ -85,4 +89,41 @@ async function setpfp(userId) {
     else {
         window.location.href='signin.html';
     }
+});
+
+async function getUserInfo(userId) {
+  try {
+      const userDocRef = doc(db, 'users', userId);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+          const userData = docSnap.data();
+          const { city, state, budget } = userData;
+          return { city, state, budget };
+      } else {
+          console.error("No such document for user:", userId);
+          return null;
+      }
+  } catch (error) {
+      console.error("Error fetching user info:", error);
+      return null;
+  }
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+      setpfp(user.uid);
+      const userInfo = await getUserInfo(user.uid);
+      if (userInfo) {
+          console.log("User info:", userInfo);
+
+          // Populate the fields
+          document.querySelector('input[placeholder="State"]').value = userInfo.state;
+          document.querySelector('input[placeholder="City"]').value = userInfo.city;
+          document.querySelector('input[placeholder="Monthly Budget"]').value = userInfo.budget;
+      } else {
+        console.error("Error fetching user data:", error);
+      }
+  } else {
+      window.location.href = 'signin.html';
+  }
 });
