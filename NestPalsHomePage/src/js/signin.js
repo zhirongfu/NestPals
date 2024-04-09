@@ -19,6 +19,8 @@ const db = getFirestore(app);
 // Initialize Firebase Authentication
 const auth = getAuth(app);
 
+const provider = new GoogleAuthProvider();
+
 document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("signin-form");
 
