@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-signin-client_id" content="630038648737-et0vimlmiicfif7gshrk4cnthh162j58.apps.googleusercontent.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"/>
     <title>Sign Up</title>
     <style>
         body {
@@ -75,8 +76,11 @@
             <input type="password" id="confirm-password" name="confirm-password" required>
 
             <button type="submit">Sign Up</button>
-            <div class="g-signin2" data-onsuccess="onSignIn"></div>
+            <br>
         </form>
+        <button id="google-login-btn" class="google-button">
+            <i class="fab fa-google"></i> Login With Google
+        </button>
     </div>
 
     <script type="module" src="js/signup.js"></script>

@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; 
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getAuth, signInWithEmailAndPassword,GoogleAuthProvider,signInWithPopup } from "firebase/auth"; 
+import { getFirestore, doc,setDoc, getDoc } from "firebase/firestore";
 //our web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
@@ -81,6 +81,35 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 });
+
+const googlelogin=document.getElementById("google-login-btn");
+googlelogin.addEventListener("click",function(){
+    signInWithPopup(auth, provider)
+  .then((result) => {
+    // This gives you a Google Access Token. You can use it to access the Google API.
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const token = credential.accessToken;
+    const user = result.user;
+    const userDocRef = doc(db, 'users', user.uid);
+    // Set the user document with Google name and email
+    return setDoc(userDocRef, {
+        username: user.displayName, // User's name from Google
+        email: user.email // User's email from Google
+    });
+    
+  }).then(() => {
+    // Data saved successfully!
+    window.location.href = "roomatequestionares.html";
+  })
+  .catch((error) => {
+    // Handle Errors here.
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // The email of the user's account used.
+  });
+}
+)
+
 
 /*
 window.addEventListener("DOMContentLoaded", () => {
