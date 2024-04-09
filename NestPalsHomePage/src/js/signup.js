@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"; 
+import { getAuth, createUserWithEmailAndPassword,GoogleAuthProvider,signInWithPopup } from "firebase/auth"; 
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -19,6 +19,8 @@ const auth = getAuth(app);
 
 // Initialize Firestore
 const db = getFirestore(app);
+
+const provider = new GoogleAuthProvider();
 
 document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("signup-form");
@@ -83,35 +85,30 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// Function to handle Google Sign-In callback
-function onSignIn(googleUser) {
-    var profile = googleUser.getBasicProfile();
-
-    const userId = profile.getId();
-    const userName = profile.getName();
-    const userEmail = profile.getEmail();
-
-    // Check if the user already exists in Firestore based on their ID
-    const userDocRef = doc(db, "users", userId);
-    getDoc(userDocRef)
-        .then((docSnap) => {
-            if (docSnap.exists()) {
-                console.log("User already exists in Firestore.");
-            } else {
-                // User does not exist, create a new entry in Firestore
-                setDoc(userDocRef, {
-                    username: userName,
-                    email: userEmail
-                })
-                .then(() => {
-                    console.log("New user created in Firestore.");
-                })
-                .catch((error) => {
-                    console.error("Error creating new user in Firestore:", error);
-                });
-            }
-        })
-        .catch((error) => {
-            console.error("Error querying Firestore:", error);
-        });
+const googlelogin=document.getElementById("google-login-btn");
+googlelogin.addEventListener("click",function(){
+    signInWithPopup(auth, provider)
+  .then((result) => {
+    // This gives you a Google Access Token. You can use it to access the Google API.
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const token = credential.accessToken;
+    const user = result.user;
+    const userDocRef = doc(db, 'users', user.uid);
+    // Set the user document with Google name and email
+    return setDoc(userDocRef, {
+        username: user.displayName, // User's name from Google
+        email: user.email // User's email from Google
+    });
+    
+  }).then(() => {
+    // Data saved successfully!
+    window.location.href = "roomatequestionares.html";
+  })
+  .catch((error) => {
+    // Handle Errors here.
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // The email of the user's account used.
+  });
 }
+)
