@@ -97,8 +97,8 @@ async function getUserInfo(userId) {
       const docSnap = await getDoc(userDocRef);
       if (docSnap.exists()) {
           const userData = docSnap.data();
-          const { city, state, budget } = userData;
-          return { city, state, budget };
+          const { username, city, state, budget } = userData;
+          return { username, city, state, budget };
       } else {
           console.error("No such document for user:", userId);
           return null;
@@ -115,15 +115,117 @@ onAuthStateChanged(auth, async (user) => {
       const userInfo = await getUserInfo(user.uid);
       if (userInfo) {
           console.log("User info:", userInfo);
-
+            
           // Populate the fields
+          const usernameDisplay = document.getElementById('user-name');
+          usernameDisplay.textContent = userInfo.username;
+
+          const stateDisplay = document.getElementById('user-state');
+          stateDisplay.textContent = userInfo.state;
+
+          const cityDisplay = document.getElementById('user-city');
+          cityDisplay.textContent = userInfo.city;
+
+          const budgetDisplay = document.getElementById('user-budget');
+          budgetDisplay.textContent = userInfo.budget;
+
+          /* Populate the fields
           document.querySelector('input[placeholder="State"]').value = userInfo.state;
           document.querySelector('input[placeholder="City"]').value = userInfo.city;
           document.querySelector('input[placeholder="Monthly Budget"]').value = userInfo.budget;
+          */
       } else {
         console.error("Error fetching user data:", error);
       }
   } else {
       window.location.href = 'signin.html';
   }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleButton = document.getElementById('toggleButton');
+    const stateDisplay = document.getElementById('user-state');
+    const cityDisplay = document.getElementById('user-city');
+    const budgetDisplay = document.getElementById('user-budget');
+    const usernameDisplay = document.getElementById('user-name');
+
+    let isEditing = false;
+
+    let stateInput, cityInput, budgetInput, usernameInput; // Declare variables here
+
+    toggleButton.addEventListener('click', () => {
+        if (isEditing) {
+            // Save edited values
+            saveEditedValues(stateDisplay, cityDisplay, budgetDisplay, usernameDisplay);
+
+            // Revert to text
+            stateDisplay.textContent = stateInput.value;
+            cityDisplay.textContent = cityInput.value;
+            budgetDisplay.textContent = budgetInput.value;
+            usernameDisplay.textContent = usernameInput.value;
+
+            // Show text, hide inputs
+            stateDisplay.style.display = 'inline';
+            cityDisplay.style.display = 'inline';
+            budgetDisplay.style.display = 'inline';
+            usernameDisplay.style.display = 'inline';
+
+            stateInput.remove();
+            cityInput.remove();
+            budgetInput.remove();
+            usernameInput.remove();
+        } else {
+            // Switch to inputs
+            stateInput = createTextInput(stateDisplay.textContent);
+            cityInput = createTextInput(cityDisplay.textContent);
+            budgetInput = createTextInput(budgetDisplay.textContent);
+            usernameInput = createTextInput(usernameDisplay.textContent);
+
+            // Hide text, show inputs
+            stateDisplay.style.display = 'none';
+            cityDisplay.style.display = 'none';
+            budgetDisplay.style.display = 'none';
+            usernameDisplay.style.display = 'none';
+
+            stateDisplay.parentNode.insertBefore(stateInput, stateDisplay);
+            cityDisplay.parentNode.insertBefore(cityInput, cityDisplay);
+            budgetDisplay.parentNode.insertBefore(budgetInput, budgetDisplay);
+            usernameDisplay.parentNode.insertBefore(usernameInput, usernameDisplay);
+        }
+
+        isEditing = !isEditing;
+        toggleButton.textContent = isEditing ? 'Save' : 'Edit user info';
+    });
+
+    function createTextInput(value) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = value;
+        return input;
+    }
+
+    async function saveEditedValues(stateDisplay, cityDisplay, budgetDisplay, usernameDisplay) {
+        try {
+            // Update Firestore document with edited values
+            const stateValue = stateInput.value;
+            const cityValue = cityInput.value;
+            const budgetValue = budgetInput.value;
+            const usernameValue = usernameInput.value;
+
+            // Assuming Firebase is already declared
+            const user = auth.currentUser;
+            if (user) {
+                await setDoc(doc(db, "users", user.uid), {
+                    state: stateValue,
+                    city: cityValue,
+                    budget: budgetValue,
+                    username: usernameValue
+                });
+            } else {
+                console.log('No authenticated user.');
+            }
+        } catch (error) {
+            console.error('Error saving edited values:', error);
+        }
+    }
 });
