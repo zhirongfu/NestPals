@@ -13,11 +13,25 @@
         }
 
         .container {
-            top: 0;
-            left: 0;
-            /*border: 5px solid black; /* Set border width and color */
-            padding: 69px; /* Set padding */
+            display: flex;
+            justify-content: space-between; /* Place items with space between them */
+            padding: 69px; /* Set padding for the container */
         }
+
+        .section1 {
+            flex: 1; /* Take up available space */
+            max-width: 50%; /* Limit width to 50% of container */
+            /* Additional styling for section1 */
+        }
+
+        .section2 {
+            flex: 1; /* Take up available space */
+            margin-top: 2vh;
+            margin-left: 40vh;
+            max-width: 50%; /* Limit width to 50% of container */
+            /* Additional styling for section2 */
+        }
+
 
         .profile {
             display: flex;
@@ -66,7 +80,28 @@
             font-size: 20px;
             font-family: Arial;
         }
+
+        .information p{
+            height: 10vh;
+            margin-bottom: 10px;
+            color:white;
+            font-size: 20px;
+            font-family: Arial;
+            margin-left: 9vh;
+        }
         
+        .UserInfo {
+            display: inline-block;
+            padding: 20px;
+            border-radius: 50px;
+            background-color: rgb(128, 128, 128);
+            border: solid #000000;
+            font-size: 40px;
+            color: black;
+            margin-bottom: 10vh;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
         .fileuploadcontainer {
             display: flex;
             flex-direction: column;
@@ -87,35 +122,57 @@
             background-color: #2c88d9; /* Darker shade on hover */
         }
         
-        
+        #toggleButton {
+            padding: 5px;
+            margin-bottom: 20px;
+            margin-top: 40px;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="profile">
-            <img src="" id='uploadimg' alt="Profile Image">
-            <div class="bio" id="bio-section">
-                <p id="user-name">
-                    <!-- Initially empty; populated dynamically by JavaScript -->
+        <div class="section1">
+            <div class="profile">
+                <img src="" id='uploadimg' alt="Profile Image">
+                <div class="bio" id="bio-section">
+                    <p id="user-name">
+                        <!-- Initially empty; populated dynamically by JavaScript -->
+                    </p>
+                </div>
+            </div>
+            <button id="toggleButton">Edit User Info</button>
+            <div class="fileuploadcontainer">
+                <input type="file" id="uploadpfp" accept="Image/png, Image/jpeg">
+                <button class="edit-btn" id="edit-btn">Upload Image</button>
+                </div>
+            <div class="preferences">
+                <p>
+                    State: <span id="user-state"></span>
+                </p>
+                <p>
+                    City: <span id="user-city"></span>
+                </p>
+                <p>
+                    Monthly Budget: <span id="user-budget"></span>
                 </p>
             </div>
         </div>
-        <button id="toggleButton">Edit user info</button>
-        <div class="fileuploadcontainer">
-            <input type="file" id="uploadpfp" accept="Image/png, Image/jpeg">
-            <button class="edit-btn" id="edit-btn">Upload Image</button>
+        <div class="section2">
+            <p class="UserInfo"> User Information </p>
+            <div class="information">
+                <p>
+                    Email Address: <span id="user-state"></span>
+                </p>
+                <p>
+                    Address: <span id="user-city"></span>
+                </p>
+                <p>
+                    DOB: <span id="user-budget"></span>
+                </p>
             </div>
-        <div class="preferences">
-            <p>
-                State: <span id="user-state"></span>
-            </p>
-            <p>
-                City: <span id="user-city"></span>
-            </p>
-            <p>
-                Monthly Budget: <span id="user-budget"></span>
-            </p>
         </div>
+        
     </div>
 
     <script type="module" src="js/profile.js"></script>
