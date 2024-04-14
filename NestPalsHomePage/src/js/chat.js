@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
           
           // Username text
           const text = document.createElement('span');
+          text.className ='username';
           text.textContent = doc.data().username;
           profileDiv.appendChild(text);
 

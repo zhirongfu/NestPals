@@ -90,6 +90,12 @@ body {
 .chat-sidebar-profile {
     margin-top: auto;
     position: relative;
+    text-align: center;
+    font-size: 2px; /* Makes the text smaller */
+    font-weight: bold; /* Makes the text bolder */
+}
+.chat-sidebar-profile .username{
+    font-size: small;
 }
 .chat-sidebar-profile-toggle {
     background-color: transparent;
