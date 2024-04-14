@@ -129,7 +129,7 @@ async function createProfileCard(user) {
   
     // Create an <a> element for the chatbox logo link
     const chatboxLink = document.createElement('a');
-    chatboxLink.href = 'your_chatbox_link_url_here';
+    chatboxLink.href = 'chat.html';
     chatboxLink.className = 'chatboxLink'; // Ensure this matches your CSS class for styling
 
     const chatIcon = document.createElement('i');
