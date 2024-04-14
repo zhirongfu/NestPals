@@ -70,7 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href='signin.html';
     }
   });
-  // Function to create a profile card
+
+// Function to create a profile card
 async function createProfileCard(user) {
     const profileItem = document.createElement('div');
     profileItem.className = 'profile-item';
