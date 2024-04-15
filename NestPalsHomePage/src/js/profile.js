@@ -182,8 +182,8 @@ async function getUserInfo(userId) {
       const docSnap = await getDoc(userDocRef);
       if (docSnap.exists()) {
           const userData = docSnap.data();
-          const { username, city, state, budget } = userData;
-          return { username, city, state, budget };
+          const { username, age, city, state, budget } = userData;
+          return { username, age, city, state, budget };
       } else {
           console.error("No such document for user:", userId);
           return null;
@@ -204,6 +204,9 @@ onAuthStateChanged(auth, async (user) => {
           // Populate the fields
           const usernameDisplay = document.getElementById('user-name');
           usernameDisplay.textContent = userInfo.username;
+
+          const ageDisplay = document.getElementById('user-age');
+          ageDisplay.textContent = userInfo.age;
 
           const stateDisplay = document.getElementById('user-state');
           stateDisplay.textContent = userInfo.state;
@@ -229,6 +232,7 @@ onAuthStateChanged(auth, async (user) => {
 
 document.addEventListener('DOMContentLoaded', () => {
     const toggleButton = document.getElementById('toggleButton');
+    const ageDisplay = document.getElementById('user-age');
     const stateDisplay = document.getElementById('user-state');
     const cityDisplay = document.getElementById('user-city');
     const budgetDisplay = document.getElementById('user-budget');
@@ -236,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isEditing = false;
 
-    let stateInput, cityInput, budgetInput, usernameInput; // Declare variables here
+    let ageInput, stateInput, cityInput, budgetInput, usernameInput; // Declare variables here
 
     toggleButton.addEventListener('click', () => {
         if (isEditing) {
@@ -244,34 +248,40 @@ document.addEventListener('DOMContentLoaded', () => {
             saveEditedValues(stateDisplay, cityDisplay, budgetDisplay, usernameDisplay);
 
             // Revert to text
+            ageDisplay.textContent = ageInput.value;
             stateDisplay.textContent = stateInput.value;
             cityDisplay.textContent = cityInput.value;
             budgetDisplay.textContent = budgetInput.value;
             usernameDisplay.textContent = usernameInput.value;
 
             // Show text, hide inputs
+            ageDisplay.style.display = 'inline';
             stateDisplay.style.display = 'inline';
             cityDisplay.style.display = 'inline';
             budgetDisplay.style.display = 'inline';
             usernameDisplay.style.display = 'inline';
 
+            ageInput.remove();
             stateInput.remove();
             cityInput.remove();
             budgetInput.remove();
             usernameInput.remove();
         } else {
             // Switch to inputs
-            stateInput = createDropdown(stateDisplay.textContent);
+            ageInput = createAgeDropdown(ageDisplay.textContent);
+            stateInput = createStateDropdown(stateDisplay.textContent);
             cityInput = createTextInput(cityDisplay.textContent);
             budgetInput = createTextInput(budgetDisplay.textContent);
             usernameInput = createTextInput(usernameDisplay.textContent);
 
             // Hide text, show inputs
+            ageDisplay.style.display = 'none';
             stateDisplay.style.display = 'none';
             cityDisplay.style.display = 'none';
             budgetDisplay.style.display = 'none';
             usernameDisplay.style.display = 'none';
 
+            ageDisplay.parentNode.insertBefore(ageInput, ageDisplay);
             stateDisplay.parentNode.insertBefore(stateInput, stateDisplay);
             cityDisplay.parentNode.insertBefore(cityInput, cityDisplay);
             budgetDisplay.parentNode.insertBefore(budgetInput, budgetDisplay);
@@ -282,7 +292,27 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleButton.textContent = isEditing ? 'Save' : 'Edit user info';
     });
     
-    function createDropdown(currentState) {
+    function createAgeDropdown(currentAge) {
+      const dropdown = document.createElement('select');
+      dropdown.id = 'ageDropdown';
+  
+      // Populate dropdown with options from 18 to 65
+      for (let age = 18; age <= 65; age++) {
+          const option = document.createElement('option');
+          option.text = age;
+          option.value = age;
+          dropdown.appendChild(option);
+      }
+  
+      // Set the selected option to the current age if it exists within the range
+      if (currentAge && currentAge >= 18 && currentAge <= 65) {
+          dropdown.value = currentAge;
+      }
+  
+      return dropdown;
+  }
+  
+    function createStateDropdown(currentState) {
         const dropdown = document.createElement('select');
         dropdown.id = 'stateDropdown';
 
@@ -319,28 +349,45 @@ document.addEventListener('DOMContentLoaded', () => {
         return input;
     }
 
-    async function saveEditedValues(stateDisplay, cityDisplay, budgetDisplay, usernameDisplay) {
-        try {
-            // Update Firestore document with edited values
-            const stateValue = stateInput.value;
-            const cityValue = cityInput.value;
-            const budgetValue = budgetInput.value;
-            const usernameValue = usernameInput.value;
-
-            // Assuming Firebase is already declared
-            const user = auth.currentUser;
-            if (user) {
-                await setDoc(doc(db, "users", user.uid), {
-                    state: stateValue,
-                    city: cityValue,
-                    budget: budgetValue,
-                    username: usernameValue
-                });
-            } else {
-                console.log('No authenticated user.');
-            }
-        } catch (error) {
-            console.error('Error saving edited values:', error);
-        }
-    }
+    async function saveEditedValues(ageDisplay, stateDisplay, cityDisplay, budgetDisplay, usernameDisplay) {
+      try {
+          // Assuming Firebase is already declared
+          const user = auth.currentUser;
+          if (user) {
+              const userDocRef = doc(db, "users", user.uid);
+              const userDoc = await getDoc(userDocRef);
+              if (userDoc.exists()) {
+                  const userData = userDoc.data();
+                  const updates = {};
+  
+                  // Update only the fields that have changed
+                  if (ageInput.value !== userData.age) {
+                    updates.age = ageInput.value;
+                  }
+                  
+                  if (stateInput.value !== userData.state) {
+                      updates.state = stateInput.value;
+                  }
+                  if (cityInput.value !== userData.city) {
+                      updates.city = cityInput.value;
+                  }
+                  if (budgetInput.value !== userData.budget) {
+                      updates.budget = budgetInput.value;
+                  }
+                  if (usernameInput.value !== userData.username) {
+                      updates.username = usernameInput.value;
+                  }
+  
+                  // Update Firestore document with edited values
+                  await updateDoc(userDocRef, updates);
+              } else {
+                  console.log('User document does not exist.');
+              }
+          } else {
+              console.log('No authenticated user.');
+          }
+      } catch (error) {
+          console.error('Error saving edited values:', error);
+      }
+  }  
 });
