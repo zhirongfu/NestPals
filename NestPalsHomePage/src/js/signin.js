@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword,GoogleAuthProvider,signInWithPopup } from "firebase/auth"; 
+import { getAuth, signInWithEmailAndPassword,GoogleAuthProvider,signInWithPopup,sendPasswordResetEmail } from "firebase/auth"; 
 import { getFirestore, doc,setDoc, getDoc } from "firebase/firestore";
 //our web app's Firebase configuration
 const firebaseConfig = {
@@ -111,8 +111,26 @@ googlelogin.addEventListener("click",function(){
   });
 }
 )
+const forgotpasswordlabel = document.getElementById('forgotpassword');
 
+const forgotPasswordLabel = document.getElementById('forgotpassword');
+const emailInput = document.getElementById('email');
 
+forgotPasswordLabel.addEventListener('click', () => {
+    const email = emailInput.value; // Get the email value from the input
+    if (email) { // Check if the email input is not empty
+        sendPasswordResetEmail(auth, email)
+            .then(() => {
+                alert('Password reset email sent successfully.');
+            })
+            .catch((error) => {
+                console.error('Failed to send password reset email:', error);
+                alert('Failed to send password reset email. Please check the email provided and try again.');
+            });
+    } else {
+        alert('Please enter your email address.');
+    }
+});
 /*
 window.addEventListener("DOMContentLoaded", () => {
   const firebaseConfig = {

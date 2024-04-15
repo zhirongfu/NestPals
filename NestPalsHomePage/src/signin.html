@@ -16,12 +16,13 @@
         }
 
         #signin-container {
-            background-color: #fff; /* Set a white background for the container */
+            position: relative;
+            background-color: #fff;
             width: 400px;
             margin: 100px auto;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow effect */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         #signin-container h2 {
@@ -71,6 +72,22 @@
             font-size: 16px;
             margin-bottom: 15px;
         }
+        .button-group {
+            text-align: left; /* Center align the contents */ 
+        }
+
+        #google-login-btn, #forgotpassword {
+            margin-bottom: 10px; /* Spacing between elements */
+            display: block; /* Make each element take full width of the container */
+        }
+
+        #forgotpassword {
+            font-size: 14px;
+            color: rgb(32, 32, 126);
+            text-decoration: underline;
+            cursor: pointer;
+            margin-bottom: 0; /* Remove any additional margin if needed */
+        }
     </style>
 </head>
 <body>
@@ -85,9 +102,12 @@
             <input type="password" id="password" name="password" required>
             <button type="submit">Sign In</button>   
         </form>
-        <button id="google-login-btn" class="google-button">
-            <i class="fab fa-google"></i> Login With Google
-        </button>
+        <div class="button-group">
+            <button id="google-login-btn" class="google-button">
+                <i class="fab fa-google"></i> Login With Google
+            </button>
+            <label id="forgotpassword" style="cursor: pointer;">Forgot Password?</label>
+        </div>
     </div>
 
     <script type="module" src="js/signin.js"></script>

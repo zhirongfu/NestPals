@@ -113,3 +113,7 @@ googlelogin.addEventListener("click",function(){
   });
 }
 )
+const alreadyhaveacc = document.getElementById('alreadyhaveanacc');
+alreadyhaveacc.addEventListener('click',()=>{
+    window.location.href = 'signin.html';
+});
