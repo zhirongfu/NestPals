@@ -12,6 +12,7 @@ const firebaseConfig = {
     messagingSenderId: "377954426735",
     appId: "1:377954426735:web:92eaef2c3160067572529a"
 };
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
@@ -108,6 +109,7 @@ async function setUserProfilePictureAsNavbarLogo(userId) {
         window.location.href='signin.html';
     }
 });
+// End navbar code
 
 // Survey related code below this comment
 // Fill in the text fields with existing user info
