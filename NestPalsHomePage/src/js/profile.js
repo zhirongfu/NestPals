@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth,onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, query, where } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getFirestore, collection, query, where, doc, getDoc, getDocs, addDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 //our Firebase configuration
@@ -19,11 +19,96 @@ const app = initializeApp(firebaseConfig);
 // Initialize services
 const db = getFirestore(app);
 const auth = getAuth(app);
-
-const user = auth.currentUser;
-
 const storage = getStorage(app);
 
+// Navbar code
+document.addEventListener('DOMContentLoaded', () => {
+    let profileDropdownList = document.querySelector(".profile-dropdown-list");
+    let btn = document.querySelector(".profile-dropdown-btn");
+    let classList = profileDropdownList.classList;
+  
+    // Define the toggle function
+    const toggle = () => classList.toggle("active");
+  
+    // Add the event listener to btn
+    btn.addEventListener('click', toggle);
+  
+    // Hide the dropdown when clicking outside of it
+    window.addEventListener("click", function (e) {
+      if (!btn.contains(e.target)) {
+        classList.remove("active");
+      }
+    const edit= document.querySelector('.EditProfile');
+    if(edit){
+      edit.addEventListener('click', function(event){
+        event.preventDefault();
+        window.location.href ='profile.html';
+      })
+    }
+    const lo=this.document.getElementById('logout');
+    lo.addEventListener('click',function(event){
+      event.preventDefault();
+      signOut(auth).then(()=>{
+        window.location.href='index.html';
+      })
+    })
+    });
+  });
+  
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is signed in, fetch their name
+      const userDocRef = doc(db, 'users', user.uid);
+      getDoc(userDocRef).then((docSnap) => {
+        if (docSnap.exists()) {
+          const userName = docSnap.data().username;
+          // Display the user's name
+          document.querySelector('.username').textContent = userName;
+        } else {
+          // Handle the case where the user document does not exist
+          console.error("No such document!");
+        }
+      }).catch((error) => {
+        console.error("Error fetching user data:", error);
+      });
+    } else {
+      // Handle user not signed in or other actions
+      window.location.href='signin.html';
+    }
+  });
+  
+  async function setUserProfilePictureAsNavbarLogo(userId) {
+    try {
+      const docRef = doc(db, "pfp", userId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().filePath) {
+        const filePath = docSnap.data().filePath;
+        const fileRef = storageRef(storage, filePath);
+        const url = await getDownloadURL(fileRef);
+  
+        const profileImgDiv = document.querySelector('.profile-img');
+        if (profileImgDiv) {
+          profileImgDiv.style.backgroundImage = `url('${url}')`;
+          profileImgDiv.style.backgroundSize = 'cover';
+          profileImgDiv.style.backgroundPosition = 'center';
+        }
+      } else {
+        console.log("Document or filePath field missing");
+      }
+    } catch (error) {
+      console.error("Error fetching image URL:", error);
+    }
+  }
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+          // Now we have a confirmed user
+          setUserProfilePictureAsNavbarLogo(user.uid);
+      } 
+      else {
+          window.location.href='signin.html';
+      }
+  });
+  // End navbar code
 async function uploadImg() {
     const fileInput = document.getElementById('uploadpfp');
     const file = fileInput.files[0]; // Get the file from input
