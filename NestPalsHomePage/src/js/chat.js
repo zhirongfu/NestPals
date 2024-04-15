@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion, setDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 const firebaseConfig = {
   apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
@@ -22,6 +22,7 @@ let currentChatUserId = null;
   onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
+            //console.log(user);
             const userDocRef = doc(db, 'users', user.uid);
             const docSnap = await getDoc(userDocRef);
             if (docSnap.exists()) {
@@ -98,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
           profileDiv.appendChild(text);
 
           // Attach an event listener to the profile bar
-          profileDiv.addEventListener('click', () => createChatBox());
+          profileDiv.addEventListener('click', () => createChatBox(doc.id));
           searchResults.appendChild(profileDiv);
         });
       } else {
@@ -123,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 // Function to create a chat box if it doesn't exist
-function createChatBox() {
+function createChatBox(otheruserid) {
   // Check if the chat box already exists
   let chatBox = document.getElementById('conversation-form');
   if (!chatBox) {
@@ -174,16 +175,70 @@ function createChatBox() {
     //appends the button to the form
     submitformbutton.appendChild(icon2);
 
-    chatBox.appendChild(submitformbutton);
 
+    chatBox.appendChild(submitformbutton);
+    submitformbutton.addEventListener('click', ()=> sendMsg(otheruserid))
 
     //appends everything to the conov form
     const convo=document.querySelector('.convoform');
     convo.appendChild(chatBox);
+    //console.log(otheruserid);
 
   }
-
-  return chatBox;
 }
+function sendMsg(otheruserid){
+    //establishes the current user and the user to send the msg to 
+    const currentuser = auth.currentUser.uid;
+    const inputvalue=document.querySelector('.conversation-form-input');
+    //keeps track of the msg to send
+    const msgToSend = inputvalue.value;
+    //method to send the msg now to firebase
+    if (msgToSend.trim()) { // Check if the message isn't just empty spaces
+      // Code to send message to Firestore or your preferred database
+      //sendMessageToFirestore(currentUser.uid, otherUserId, messageToSend);
+      //console.log(msgToSend);
+      // Clear the input after sending
+      sendMsgToFirestore(currentuser,otheruserid,msgToSend);
+      inputvalue.value = '';
+  }
 
-
+    //console.log(currentuser);
+    //console.log(otheruserid);
+}
+async function sendMsgToFirestore(currentUser,otherUserId,msgToSend){
+  /*console.log(msgToSend);
+  console.log(currentuser);
+  console.log(otheruserid);*/
+  const docId = [currentUser, otherUserId].sort().join('_');
+  //console.log(docId);
+  const currentUsername = await getUsername(currentUser);
+  const otherUsername = await getUsername(otherUserId);
+  //console.log(currentUsername);
+  //console.log(otherUsername);
+  //sets the msg to send in the form of username:msgtosend
+  const msgWithUsername = `${currentUsername}:${msgToSend}`;
+  //console.log(msgWithUsername);
+  //gets the doc refs and everything
+  const conversationRef = doc(db, 'conversations', docId);
+  const conversationDoc = await getDoc(conversationRef);
+  if(conversationDoc.exists()){
+    await updateDoc(conversationRef, {
+      messages: arrayUnion(msgWithUsername)
+    });
+  }else{
+    //else creates a new doc with first msg
+    await setDoc(conversationRef, {
+      messages: [msgWithUsername]
+    });
+  }
+}
+// Helper function to get a username by user ID
+async function getUsername(userId) {
+  const userRef = doc(db, "users", userId);
+  const userDoc = await getDoc(userRef);
+  if (userDoc.exists()) {
+      return userDoc.data().username;  // Assuming the username field is stored in the user document
+  } else {
+      throw new Error(`User with ID ${userId} does not exist.`);
+  }
+}

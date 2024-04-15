@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword,GoogleAuthProvider,signInWithPopup } from "firebase/auth"; 
+import { getAuth, createUserWithEmailAndPassword,GoogleAuthProvider,signInWithPopup,sendEmailVerification } from "firebase/auth"; 
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             const userDocRef = doc(db, "users", user.uid);
+            //sendEmailVerification(auth.currentUser);
 
             // Push email and username to Firestore "users" collection
             await setDoc(userDocRef, {
