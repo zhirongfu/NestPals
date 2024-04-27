@@ -50,14 +50,6 @@ let currentChatUserId = null;
 });
 // ... rest of your imports and Firebase setup
 
-// This code implements the dropdown menu when you click on your own user.
-const profileToggle = document.querySelector('.chat-sidebar-profile-toggle');
-const profileDropdown = document.querySelector('.chat-sidebar-profile-dropdown');
-
-profileToggle.addEventListener('click', () => {
-    profileDropdown.classList.toggle('active');
-});
-
 // code to search for users
 document.addEventListener('DOMContentLoaded', () => {
   // Reference to the search form and search results container
