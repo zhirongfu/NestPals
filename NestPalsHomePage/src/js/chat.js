@@ -1,7 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion, setDoc,Timestamp } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { createElement } from 'react';
 const firebaseConfig = {
   apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
   authDomain: "nestpals-backend.firebaseapp.com",
@@ -42,6 +43,16 @@ let currentChatUserId = null;
             } else {
                 console.log("Document or filePath field missing");
             }
+            //loads the chats already in place from order docu
+            const orderRef = doc(db, "chatorder", user.uid);
+            const orderSnap = await getDoc(orderRef);
+            if(orderSnap.exists()){
+              orderSnap.data().order.forEach(chatId => {
+                  //console.log(chatId);
+                  //for each element in the order create a little profile tab
+                  displayChatsTab(chatId);
+              });
+            }
         } catch (error) {
             console.error("Error fetching user data:", error);
         }
@@ -49,28 +60,87 @@ let currentChatUserId = null;
         window.location.href = 'signin.html';
     }
 });
-// ... rest of your imports and Firebase setup
+//displaychats tab helper function
+async function displayChatsTab(chatId){
+  const currentuser = auth.currentUser.uid;
+  const q = doc(db,"users",chatId);
+  const querySnapshot = await getDoc(q);
 
+  if (!querySnapshot.empty ) {
+    // Iterate over the documents returned by the query
+      // Attempt to get the user's profile picture
+    let imgUrl;
+    try {
+      imgUrl = await getUserProfilePictureUrl(chatId);
+    } catch (error) {
+        console.log("Error getting profile picture URL:", error);
+        imgUrl = 'path_to_default_image.jpg'; // Fallback image path
+      }
+      const existingProfileDiv = document.getElementById(`${chatId}`);
+      if (existingProfileDiv){
+        searchResults.removeChild(existingProfileDiv);
+        searchResults.prepend(existingProfileDiv);
+      }
+      else{
+        // Create a new profile bar for each user
+        const profileDiv = document.createElement('div');
+        profileDiv.className = 'user-profile flex items-center p-2';
+        profileDiv.id = `${chatId}`;
+      
+        
+        // Profile picture
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.className = 'h-12 w-12 rounded-full mr-2';
+        profileDiv.appendChild(img);
+        
+        // Username text
+        const text = document.createElement('span');
+        text.className ='username';
+        text.textContent = querySnapshot.data().username;
+        profileDiv.appendChild(text);
+
+        // Attach an event listener to the profile bar
+        profileDiv.addEventListener('click', async() => {
+          const currentUsernamePromise = await getUsername(currentuser);
+          const otherUsernamePromise = await getUsername(chatId);
+          highlightProfile(profileDiv);
+      
+          try {
+              const currentUsername = currentUsernamePromise;
+              const otherUsername = otherUsernamePromise;
+              createChatBox(chatId);
+              displayChatMsg(chatId, currentUsername, otherUsername);
+          } catch (error) {
+              console.error("Failed to fetch usernames:", error);
+          }
+      });
+        searchResults.appendChild(profileDiv);
+      }
+      }
+}
 document.addEventListener('DOMContentLoaded', () => {
-  // Reference to the search form and search results container
+  //to remove the files if inputed
+  // Reference to the search form and search results containe
   const searchForm = document.getElementById('userSearchForm');
   const searchResults = document.getElementById('searchResults');
-  const messageForm = document.getElementById('sendMessageForm');
-  const messageInput = document.getElementById('messageInput');
-  const conversationMessages = document.getElementById('conversationMessages');
-
 
   searchForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const username = document.getElementById('searchInput').value.trim();
-    searchResults.innerHTML = ''; // Clear the previous search results
-
-    if (username) {
+   // Clear the previous search results
+   const currentUser = auth.currentUser;
+   const currentUserRef = doc(db, "users", currentUser.uid);
+   const currentUserDoc = await getDoc(currentUserRef);
+   const currentUserUsername = currentUserDoc.data().username;
+      
+    if (username && username != currentUserUsername) {
       // Query Firestore for users with matching usernames
       const q = query(collection(db, "users"), where("username", "==", username));
       const querySnapshot = await getDocs(q);
+      const currentuser = auth.currentUser.uid;
 
-      if (!querySnapshot.empty) {
+      if (!querySnapshot.empty ) {
         // Iterate over the documents returned by the query
         querySnapshot.forEach(async (doc) => {
           // Attempt to get the user's profile picture
@@ -81,33 +151,75 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Error getting profile picture URL:", error);
             imgUrl = 'path_to_default_image.jpg'; // Fallback image path
           }
-
-          // Create a new profile bar for each user
-          const profileDiv = document.createElement('div');
-          profileDiv.className = 'user-profile flex items-center p-2';
+          const existingProfileDiv = document.getElementById(`${doc.id}`);
+          if (existingProfileDiv){
+            searchResults.removeChild(existingProfileDiv);
+            searchResults.prepend(existingProfileDiv);
+          }
+          else{
+            // Create a new profile bar for each user
+            const profileDiv = document.createElement('div');
+            profileDiv.className = 'user-profile flex items-center p-2';
+            profileDiv.id = `${doc.id}`;
           
-          // Profile picture
-          const img = document.createElement('img');
-          img.src = imgUrl;
-          img.className = 'h-12 w-12 rounded-full mr-2';
-          profileDiv.appendChild(img);
-          
-          // Username text
-          const text = document.createElement('span');
-          text.className ='username';
-          text.textContent = doc.data().username;
-          profileDiv.appendChild(text);
+            
+            // Profile picture
+            const img = document.createElement('img');
+            img.src = imgUrl;
+            img.className = 'h-12 w-12 rounded-full mr-2';
+            profileDiv.appendChild(img);
+            
+            // Username text
+            const text = document.createElement('span');
+            text.className ='username';
+            text.textContent = doc.data().username;
+            profileDiv.appendChild(text);
 
-          // Attach an event listener to the profile bar
-          profileDiv.addEventListener('click', () => createChatBox(doc.id));
-          searchResults.appendChild(profileDiv);
-        });
+            // Attach an event listener to the profile bar
+            profileDiv.addEventListener('click', async() => {
+              const currentUsernamePromise = await getUsername(currentuser);
+              const otherUsernamePromise = await getUsername(doc.id);
+              highlightProfile(profileDiv);
+          
+              try {
+                  const currentUsername = currentUsernamePromise;
+                  const otherUsername = otherUsernamePromise;
+                  createChatBox(doc.id);
+                  displayChatMsg(doc.id, currentUsername, otherUsername);
+              } catch (error) {
+                  console.error("Failed to fetch usernames:", error);
+              }
+          });
+            searchResults.appendChild(profileDiv);
+          }})
+          }
+      else{
+        displayNoUserFound();
+        return;
+      }   
       } else {
         // Handle the case where no users are found
-        searchResults.textContent = 'No users found.';
+        displayNoUserFound();
       }
-    }
+    })
   });
+  function highlightProfile(profileDiv) {
+    const currentlyActive = document.querySelector('.active-user-profile');
+    if (currentlyActive) {
+        currentlyActive.classList.remove('active-user-profile');
+    }
+    profileDiv.classList.add('active-user-profile');
+    
+}
+  function displayNoUserFound(){
+    const noUserFound = document.getElementById('textcontent')
+      noUserFound.textContent = 'No users found.';
+        // Clear the text after 3 seconds (3000 milliseconds)
+    setTimeout(() => {
+        noUserFound.textContent = ''; // Clears the text content
+    }, 3000)
+      }
+
   async function getUserProfilePictureUrl(userId) {
     const pfpRef = doc(db, "pfp", userId);
     const pfpSnap = await getDoc(pfpRef);
@@ -121,8 +233,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-
-});
 // Function to create a chat box if it doesn't exist
 function createChatBox(otheruserid) {
   // Check if the chat box already exists
@@ -154,15 +264,31 @@ function createChatBox(otheruserid) {
 
     convoformgroup.appendChild(forminput);
 
-    //create submit button
+    //create select files btn
     const submitfilebutton = document.createElement('button');
     submitfilebutton.className = 'conversation-form-record';
-    //the button to append to the submit button
+    //the button to append to the files icon
     const icon1 = document.createElement('i');
     icon1.className='ri-attachment-line';
-    //append logo to submit btn
-    submitfilebutton.appendChild(icon1);
 
+    const inputfile = document.createElement('input');
+    inputfile.type = 'file';
+    inputfile.id = 'uploadimg';
+    inputfile.accept = 'image/png, image/jpeg';
+    inputfile.className= 'file-input'
+
+    const fileNameDisplay = document.createElement('span');
+    fileNameDisplay.className = 'file-name';
+
+    //append logo to btn
+    submitfilebutton.appendChild(icon1);
+    submitfilebutton.appendChild(inputfile);
+    submitfilebutton.appendChild(fileNameDisplay);
+
+    // Event listener to update file name display when a file is chosen
+    inputfile.addEventListener('change', function() {
+      fileNameDisplay.textContent = inputfile.files.length > 0 ? inputfile.files[0].name : '';
+    });
     convoformgroup.appendChild(submitfilebutton);
 
     chatBox.appendChild(convoformgroup);
@@ -174,25 +300,38 @@ function createChatBox(otheruserid) {
     icon2.className='ri-send-plane-fill';
     //appends the button to the form
     submitformbutton.appendChild(icon2);
-
-
     chatBox.appendChild(submitformbutton);
-    submitformbutton.addEventListener('click', ()=> sendMsg(otheruserid))
-
     //appends everything to the conov form
     const convo=document.querySelector('.convoform');
     convo.appendChild(chatBox);
     //console.log(otheruserid);
 
   }
+  // Clear previous event listeners that might be attached
+  const submitButton = chatBox.querySelector('.conversation-form-submit') || createSubmitButton();
+  submitButton.removeEventListener('click', submitButton.clickHandler);
+  
+  // Create a new handler function that captures the current `otheruserid`
+  submitButton.clickHandler = () => sendMsg(otheruserid);
+  submitButton.addEventListener('click', submitButton.clickHandler);
+
+  // Ensure button is part of the chatBox
+  chatBox.appendChild(submitButton);
+
+  // Append chatBox to the DOM if necessary
+  const convo = document.querySelector('.convoform');
+  if (!convo.contains(chatBox)) {
+      convo.appendChild(chatBox);
+  }
 }
 function sendMsg(otheruserid){
-    //establishes the current user and the user to send the msg to 
     const currentuser = auth.currentUser.uid;
+    //establishes the current user and the user to send the msg to 
     const inputvalue=document.querySelector('.conversation-form-input');
     //keeps track of the msg to send
     const msgToSend = inputvalue.value;
     //method to send the msg now to firebase
+    const isThereImg = document.getElementById('uploadimg');
     if (msgToSend.trim()) { // Check if the message isn't just empty spaces
       // Code to send message to Firestore or your preferred database
       //sendMessageToFirestore(currentUser.uid, otherUserId, messageToSend);
@@ -200,7 +339,11 @@ function sendMsg(otheruserid){
       // Clear the input after sending
       sendMsgToFirestore(currentuser,otheruserid,msgToSend);
       inputvalue.value = '';
-  }
+    }
+    if(isThereImg && isThereImg.files.length >0){
+      sendImageToFirebase(currentuser,otheruserid);
+    }
+
 
     //console.log(currentuser);
     //console.log(otheruserid);
@@ -216,21 +359,109 @@ async function sendMsgToFirestore(currentUser,otherUserId,msgToSend){
   //console.log(currentUsername);
   //console.log(otherUsername);
   //sets the msg to send in the form of username:msgtosend
-  const msgWithUsername = `${currentUsername}:${msgToSend}`;
+  //timestamp function from firebase
+  const timestamp = Timestamp.now();
+  const msgWithUsernameAndTimestamp = `${currentUsername}:${timestamp}:${msgToSend}`;
   //console.log(msgWithUsername);
   //gets the doc refs and everything
   const conversationRef = doc(db, 'conversations', docId);
   const conversationDoc = await getDoc(conversationRef);
   if(conversationDoc.exists()){
+
     await updateDoc(conversationRef, {
-      messages: arrayUnion(msgWithUsername)
+      messages: arrayUnion(msgWithUsernameAndTimestamp)
     });
   }else{
     //else creates a new doc with first msg
     await setDoc(conversationRef, {
-      messages: [msgWithUsername]
+      messages: [msgWithUsernameAndTimestamp]
     });
   }
+  //moves the user ur talking to to the top
+  const existingProfileDiv = document.getElementById(`${otherUserId}`);
+  if(existingProfileDiv){
+    const searchResults = document.getElementById('searchResults');
+    //if it is not already at the top
+    if(searchResults.firstChild !== existingProfileDiv)
+    {
+      searchResults.removeChild(existingProfileDiv);
+      searchResults.prepend(existingProfileDiv);
+    }
+  }
+  await displayChatMsg(otherUserId,currentUsername,otherUsername);
+  await storeChatOrderToFirebase(currentUser,otherUserId);
+}
+//Helper function for displayign msgs
+async function displayChatMsg(otherUserId,currentUsername,otherUsername)
+{
+  const conversationMsgDiv = document.getElementById('conversationMessages');
+  conversationMsgDiv.innerHTML = '';
+  const currentuser = auth.currentUser.uid;
+  const docId = [currentuser, otherUserId].sort().join('_');
+  const docRef = doc(db,"conversations",docId);  
+  const msgDoc = await getDoc(docRef);
+  const docData = msgDoc.data();
+  if (docData && docData.messages) {
+    // Loop through the messages array
+  for(const message of docData.messages) {
+    const messageParts = message.split(':');  // Split the message string at the colon
+    if (messageParts.length >= 3) {
+      const username = messageParts[0];
+      const timestamp = messageParts[1];
+      const text = messageParts.slice(2).join(':'); // Join back the rest of the message in case it contains colons
+      if(currentUsername == username){
+        //checks if the msg could be a path to an img
+        if (text.startsWith(`pictures/${docId}`)){
+          const ownImageBox = document.createElement('div');
+          const fileRef =  storageRef(storage,text);
+          const imageUrl = await getDownloadURL(fileRef);
+          ownImageBox.classList = 'ownImageBox';
+          const ownImg = document.createElement('img');//creates img elemnt to append
+          ownImg.src = imageUrl;
+          ownImg.classList = 'ownImage';
+          ownImageBox.appendChild(ownImg);
+          conversationMsgDiv.appendChild(ownImageBox);//appends the img to the msg box
+        }
+      else{
+        const ownMessageBox = document.createElement('div');
+        ownMessageBox.classList = 'ownMessageBox';
+        const ownMessage = document.createElement('div');
+        ownMessage.classList = 'ownMessage';
+        ownMessage.textContent = text;
+        ownMessageBox.appendChild(ownMessage);
+        conversationMsgDiv.appendChild(ownMessageBox);
+      }
+      }
+      else{
+        if (text.startsWith(`pictures/${docId}`)){
+          const ownImageBox = document.createElement('div');
+          const fileRef =  storageRef(storage,text);
+          const imageUrl = await getDownloadURL(fileRef);
+          ownImageBox.classList = 'otherImageBox';
+          const ownImg = document.createElement('img');//creates img elemnt to append
+          ownImg.src = imageUrl;
+          ownImageBox.appendChild(ownImg);
+          conversationMsgDiv.appendChild(ownImageBox);//appends the img to the msg box
+        }
+        else{
+          const otherMessageBox = document.createElement('div');
+          otherMessageBox.classList = 'otherMessageBox';
+          const otherMessage = document.createElement('div');
+          otherMessage.classList = 'otherMessage';
+          otherMessage.textContent = text;
+          otherMessageBox.appendChild(otherMessage);
+          conversationMsgDiv.appendChild(otherMessageBox);
+        }
+      }
+      scrollToBottom();
+    } else {
+      // Handle cases where the message might not be in the expected format
+      console.log(`Message ${index + 1} is not in the expected format.`);
+    }
+  };
+} else {
+  console.log("No messages found or document does not exist.");
+}
 }
 // Helper function to get a username by user ID
 async function getUsername(userId) {
@@ -240,5 +471,57 @@ async function getUsername(userId) {
       return userDoc.data().username;  // Assuming the username field is stored in the user document
   } else {
       throw new Error(`User with ID ${userId} does not exist.`);
+  }
+}
+function scrollToBottom() {
+  const conversationMessages = document.getElementById('conversationMessages');
+  conversationMessages.scrollTop = conversationMessages.scrollHeight;
+}
+async function storeChatOrderToFirebase(docId,otherUserDocId){
+  //makes another document in db to store the order of the chats
+  const chatOrderRef = doc(db,'chatorder',docId);
+  const chatOrderDoc = await getDoc(chatOrderRef);
+  if(chatOrderDoc.exists()){
+     // Get current order or initialize it if not set
+     let currentOrder = chatOrderDoc.data().order || [];
+     // Remove the otherUserDocId if it already exists to prevent duplication
+     currentOrder = currentOrder.filter(id => id !== otherUserDocId);
+     // Prepend the otherUserDocId to start of the array to push it to the top
+     currentOrder.unshift(otherUserDocId);
+     // Update the document with the new order
+     await updateDoc(chatOrderRef, {
+       order: currentOrder
+     });
+  }else{
+    await setDoc(chatOrderRef, {
+      order: [otherUserDocId]
+    });
+  }
+
+}
+async function sendImageToFirebase(currentUserId,otherUserId){
+  const imgToSend = document.getElementById('uploadimg');
+  if(imgToSend){
+    const file = imgToSend.files[0];
+    const docId = [currentUserId,otherUserId].sort().join('_'); 
+    try {
+      // Corrected the file path using template literals
+      const fileRef = storageRef(storage, `pictures/${docId}/${file.name}`);
+      await uploadBytes(fileRef, file);
+      sendMsgToFirestore(currentUserId,otherUserId,`pictures/${docId}/${file.name}`);
+      clearFileInput(imgToSend);
+  } catch (error) {
+      console.error('Error uploading image:', error);
+  }
+  }
+}
+function clearFileInput(field) {
+  // Debugging output to confirm the function is called
+
+  // Set the value of the input to null to clear it
+  field.value = '';
+  const fileNameDisplay = document.querySelector('.file-name');
+  if (fileNameDisplay) {
+    fileNameDisplay.textContent = '';
   }
 }

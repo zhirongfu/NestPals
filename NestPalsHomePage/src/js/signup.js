@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword,GoogleAuthProvider,signInWithPopup,sendEmailVerification } from "firebase/auth"; 
+import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendEmailVerification } from "firebase/auth"; 
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -11,109 +11,77 @@ const firebaseConfig = {
     appId: "1:377954426735:web:92eaef2c3160067572529a"
 };
 
-// Initialize Firebase App
 const app = initializeApp(firebaseConfig);
-
-// Initialize Firebase Authentication
 const auth = getAuth(app);
-
-// Initialize Firestore
 const db = getFirestore(app);
-
 const provider = new GoogleAuthProvider();
 
 document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("signup-form");
+    const usernameInput = document.getElementById("username");
+
+    usernameInput.addEventListener('input', function() {
+        const isValid = /^[A-Za-z0-9_-]+$/.test(this.value);
+        this.setCustomValidity(isValid ? "" : "Usernames can only contain letters, numbers, underscores, and hyphens.");
+    });
 
     form.addEventListener("submit", async function(event) {
-        // Prevent default form submission
         event.preventDefault();
 
-        // Retrieve form input values
-        const username = document.getElementById("username").value;
+        const username = usernameInput.value;
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
         const confirmPassword = document.getElementById("confirm-password").value;
 
-        // Validate password match
         if (password !== confirmPassword) {
             alert("Passwords do not match. Please try again.");
             return;
         }
 
-        try {
-            // Check if email already exists
-            const emailQuery = doc(db, "users", email);
-            const emailSnapshot = await getDoc(emailQuery);
+        if (!/^[A-Za-z0-9_-]+$/.test(username)) {
+            alert("Usernames can only contain letters, numbers, underscores, and hyphens.");
+            return;
+        }
 
+        try {
+            const emailSnapshot = await getDoc(doc(db, "users", email));
             if (emailSnapshot.exists()) {
                 alert("Email already exists. Please use a different email.");
                 return;
             }
 
-            // Check if username already exists
-            const usernameQuery = doc(db, "users", username);
-            const usernameSnapshot = await getDoc(usernameQuery);
-
-            if (usernameSnapshot.exists()) {
-                alert("Username already exists. Please choose a different username.");
-                return;
-            }
-
-            // Authenticate user using Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            const userDocRef = doc(db, "users", user.uid);
-            //sendEmailVerification(auth.currentUser);
-
-            // Push email and username to Firestore "users" collection
-            await setDoc(userDocRef, {
+            await setDoc(doc(db, "users", user.uid), {
                 username: username,
                 email: email
             });
 
-            // If signup is successful, alert the user and optionally redirect to another page
-            alert("Sign up successful!");
-
-            // Redirect to signin.html to formally login and use cookie tracking
+            sendEmailVerification(user);
+            alert("Sign up successful! Please verify your email.");
             window.location.href = "signin.html";
-
         } catch (error) {
-            // Handle error
             console.error("Error signing up:", error.message);
             alert("Error signing up. Please try again later.");
         }
     });
 });
-
-const googlelogin=document.getElementById("google-login-btn");
-googlelogin.addEventListener("click",function(){
-    signInWithPopup(auth, provider)
-  .then((result) => {
-    // This gives you a Google Access Token. You can use it to access the Google API.
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const token = credential.accessToken;
-    const user = result.user;
-    const userDocRef = doc(db, 'users', user.uid);
-    // Set the user document with Google name and email
-    return setDoc(userDocRef, {
-        username: user.displayName, // User's name from Google
-        email: user.email // User's email from Google
+    const googleLoginButton=document.getElementById("google-login-btn");
+    googleLoginButton.addEventListener("click", async function() {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            await setDoc(doc(db, 'users', user.uid), {
+                username: user.displayName,
+                email: user.email
+            });
+            window.location.href = "roomatequestionares.html";
+        } catch (error) {
+            console.error("Error during Google sign in:", error);
+            alert("Error during sign in: " + error.message);
+        }
     });
-    
-  }).then(() => {
-    // Data saved successfully!
-    window.location.href = "roomatequestionares.html";
-  })
-  .catch((error) => {
-    // Handle Errors here.
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    // The email of the user's account used.
-  });
-}
-)
-const alreadyhaveacc = document.getElementById('alreadyhaveanacc');
-alreadyhaveacc.addEventListener('click',()=>{
-    window.location.href = 'signin.html';
-});
+    const alreadyHaveAccount = document.getElementById('alreadyhaveanacc');
+    alreadyHaveAccount.addEventListener('click', () => {
+        window.location.href = 'signin.html';
+    });

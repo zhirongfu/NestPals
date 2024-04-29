@@ -361,3 +361,85 @@ body {
     box-shadow: 0 2px 8px -2px var(--emerald-500);
     color: var(--white);
 }
+.conversation-messages{
+    display: flex;
+    height: 671px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding: 10px;
+}
+.ownMessage{
+    flex-direction: row;
+    flex-direction: right;
+}
+.ownMessageBox {
+    align-self: flex-end;  /* Aligns your messages to the right */
+    background-color: #dcf8c6;  /* Light green background, common for the sender */
+    margin: 5px;
+    padding: 5px 10px;
+    border-radius: 10px;
+    max-width: 80%;
+}
+.ownImageBox {
+    align-self: flex-end;
+    max-width: 400px;  /* Maximum width of images */
+    max-height: 400px; /* Maximum height of images */
+    width: auto;       /* Maintain aspect ratio */
+    height: auto;      /* Maintain aspect ratio */
+    border-radius: 8px;
+    
+}
+.ownImage {
+    align-self: flex-end;
+    max-width: 400px;  /* Maximum width of images */
+    max-height: 400px; /* Maximum height of images */
+    width: auto;       /* Maintain aspect ratio */
+    height: auto;      /* Maintain aspect ratio */
+    border-radius: 8px;
+}
+.otherMessage{
+    flex-direction: row;
+}
+.otherMessageBox {
+    align-self: flex-start;  /* Aligns other messages to the left */
+    background-color: #fff;  /* White background for the recipient */
+    margin: 5px;
+    padding: 5px 10px;
+    border-radius: 10px;
+    max-width: 80%;
+}
+.active-user-profile {
+    background-color: #28bc86; /* Light blue background */
+    border-left: 5px solid rgb(26, 170, 96); /* Adds a blue left border for emphasis */
+}
+/* Styling for the button that acts as a file input trigger */
+.file-upload-button {
+    position: relative;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+/* Styling for the icon inside the button */
+.file-upload-icon {
+    font-size: 24px;  /* Adjust size as needed */
+}
+
+/* Styling for the invisible file input overlay */
+.file-input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+.file-name {
+    margin-left: 10px;
+    font-size: 14px;
+    color: #666; /* Adjust color as needed */
+}
