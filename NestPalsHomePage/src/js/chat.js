@@ -19,7 +19,6 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 let currentChatUserId = null;
 // Wrap your code to ensure the DOM is fully loaded
-// Wrap your code to ensure the DOM is fully loaded
   onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
