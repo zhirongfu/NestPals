@@ -136,13 +136,18 @@ async function createProfileCard(user) {
 
   profileItem.appendChild(detailsContainer);
 
-  // Create a location button
-  const locationButton = document.createElement('button');
-  locationButton.textContent = 'Location';
-  locationButton.className = 'location-button';
-  profileItem.appendChild(locationButton);
+  // Create an <a> element for the location link
+  const locationLink = document.createElement('a');
+  locationLink.href = '#'; // Set the href attribute to '#' for now, you can update it later if needed
+  locationLink.className = 'location-link';
 
-  locationButton.addEventListener('click', async () => {
+  const locationIcon = document.createElement('i');
+  locationIcon.textContent = 'LOCATION';
+  locationIcon.className = 'fa-solid fa-globe';
+  locationLink.appendChild(locationIcon);
+  profileItem.appendChild(locationLink);
+
+  locationLink.addEventListener('click', async () => {
     try {
         const stateName = user.state; // Assuming user.state contains the state name
         const stateCoords = stateCoordinates[stateName]; // Fetching coordinates from stateCoordinates object
