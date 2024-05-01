@@ -17,6 +17,7 @@
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.6",
     "@popperjs/core": "^2.11.8",
+    "axios": "^1.6.8",
     "bootstrap": "^5.3.3",
     "firebase": "^10.9.0",
     "gapi-script": "^1.2.0",

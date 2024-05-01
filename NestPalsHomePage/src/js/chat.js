@@ -3,6 +3,14 @@ import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion, setDoc,Timestamp } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { createElement } from 'react';
+import { Loader } from "@googlemaps/js-api-loader";
+import axios from 'axios';
+const GoogleMapsApiKey = 'AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU';
+const loader = new Loader({
+    apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
+    version: "weekly",
+    libraries: ["places"]
+});
 const firebaseConfig = {
   apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
   authDomain: "nestpals-backend.firebaseapp.com",
@@ -11,7 +19,6 @@ const firebaseConfig = {
   messagingSenderId: "377954426735",
   appId: "1:377954426735:web:92eaef2c3160067572529a"
 };
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -119,6 +126,11 @@ async function displayChatsTab(chatId){
       }
 }
 document.addEventListener('DOMContentLoaded', () => {
+  function initMap() {
+    // test func
+    console.log("Google Maps API loaded successfully.");
+    
+  } 
   //to remove the files if inputed
   // Reference to the search form and search results containe
   const searchForm = document.getElementById('userSearchForm');
@@ -251,6 +263,19 @@ function createChatBox(otheruserid) {
 
     chatBox.appendChild(emotebutton);
 
+    //create the google maps btn
+    const googlemapsbutton = document.createElement('button');
+    googlemapsbutton.className = 'google-maps-button';
+    const mapicon = document.createElement('i');
+    mapicon.className = 'ri-earth-fill';
+    googlemapsbutton.appendChild(mapicon);
+
+    /*googlemapsbutton.addEventListener('click', function() {
+      toggleMapVisibility(); // Toggle visibility on button click
+  })*/
+
+    chatBox.appendChild(googlemapsbutton);
+
     // text area (skipped conversation form group)
     const convoformgroup = document.createElement('div');
     convoformgroup.className ='conversation-form-group';
@@ -306,8 +331,15 @@ function createChatBox(otheruserid) {
     //console.log(otheruserid);
 
   }
+  //adding function for gmaps btn click
+  const gmapsbtn = chatBox.querySelector('.google-maps-button');
+  gmapsbtn.removeEventListener('click', gmapsbtn.clickHandler); //this removes the previous instance of event listener
+
+  gmapsbtn.clickHandler = () => openGmaps(otheruserid);
+  gmapsbtn.addEventListener('click', gmapsbtn.clickHandler);
+
   // Clear previous event listeners that might be attached
-  const submitButton = chatBox.querySelector('.conversation-form-submit') || createSubmitButton();
+  const submitButton = chatBox.querySelector('.conversation-form-submit');
   submitButton.removeEventListener('click', submitButton.clickHandler);
   
   // Create a new handler function that captures the current `otheruserid`
@@ -321,6 +353,127 @@ function createChatBox(otheruserid) {
   const convo = document.querySelector('.convoform');
   if (!convo.contains(chatBox)) {
       convo.appendChild(chatBox);
+  }
+}
+
+async function getState(userId) {
+  const userRef = doc(db, "users", userId);
+  const userDoc = await getDoc(userRef);
+  if (userDoc.exists()) {
+      return userDoc.data().state;  // Assuming the username field is stored in the user document
+  } else {
+      throw new Error(`User with ID ${userId} does not exist.`);
+  }
+}
+async function getBudget(userId) {
+  const userRef = doc(db, "users", userId);
+  const userDoc = await getDoc(userRef);
+  if (userDoc.exists()) {
+      return userDoc.data().budget;  // Assuming the username field is stored in the user document
+  } else {
+      throw new Error(`User with ID ${userId} does not exist.`);
+  }
+}
+async function getCoordsForAddress(address) {
+  const encodedAddress = encodeURIComponent(address); // Properly encode the address
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${GoogleMapsApiKey}`;
+
+  try {
+    const response = await axios.get(url); // Make the HTTP GET request with the correct URL
+    if (response.data.status === 'OK') {
+      const coords = response.data.results[0].geometry.location; // Extract latitude and longitude
+      return coords; // { lat: XX.XXXX, lng: YY.YYYY }
+    } else {
+      throw new Error(`Geocoding failed: ${response.data.status}`);
+    }
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    return null;
+  }
+}
+async function getMidpoint(coord1, coord2){
+  const lat = (coord1.lat + coord2.lat) /2 ;
+  const lng = (coord1.lng + coord2.lng) /2 ;
+  return {lat, lng};
+}
+async function openGmaps(otheruserid){
+    //console.log(`${otheruserid}`);
+    const ownUserid = auth.currentUser.uid;
+    //console.log(`${ownUserid}`);
+    const ownUserState = await getState(ownUserid);
+    const otherUserState = await getState(otheruserid);
+    const ownBuget = parseInt(await getBudget(ownUserid), 10);
+    const otherUserBudget = +await getBudget(otheruserid);
+    //console.log(`${otherUserState}`);
+    //console.log(typeof(otherUserBudget));
+    //console.log(typeof(ownBuget));
+    const averageBudget = Math.min(ownBuget,otherUserBudget) *2;
+    //console.log(averageBudget);
+    const longlat1 = await getCoordsForAddress(ownUserState);//gets coords for own user
+    const longlat2 = await getCoordsForAddress(otherUserState);//gets for other user u are chattign to
+    const midPoint = await getMidpoint(longlat1,longlat2); //avgs out the 2 coords. the long and lat obj. google maps needs
+    
+    await displayMapAtMidPoint(midPoint);
+    //await findRentals(midPoint, averageBudget);
+    //console.log(longlat1);
+    //console.log(longlat2);
+    //console.log(midPoint);
+}
+async function displayMapAtMidPoint(midPoint) {
+  let conversationForm = document.getElementById('conversation-form');
+  let mapContainer = document.getElementById('map-container');
+
+  // Check if the map container exists, if not create it
+  if (!mapContainer) {
+      mapContainer = document.createElement('div');
+      mapContainer.id = 'map-container';
+      mapContainer.className = 'map-container';
+      conversationForm.prepend(mapContainer);
+  } else {
+      // Check if a map instance already exists
+      if (mapContainer.mapInstance) {
+          console.log("Map already exists. Deleting...");
+          deleteMapContainer(); // Call the function to remove the map
+          return; // Exit the function to prevent re-initialization in this call
+      }
+  }
+
+  // Create a new map inside the 'map-container' div
+  const map = new google.maps.Map(mapContainer, {
+      center: midPoint,
+      zoom: 12  // Adjusted zoom level for better overview
+  });
+  mapContainer.mapInstance = map; // Store the map instance on the container
+
+  // Add a marker using the appropriate method
+  if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
+      new google.maps.marker.AdvancedMarkerElement({
+          position: midPoint,
+          map: map,
+          title: 'Midpoint Location'
+      });
+  } else {
+      new google.maps.Marker({
+          position: midPoint,
+          map: map,
+          title: 'Midpoint Location'
+      });
+  }
+
+  console.log("Map displayed at midpoint:", midPoint);
+}
+
+async function deleteMapContainer() {
+  let mapContainer = document.getElementById('map-container');
+  if (mapContainer) {
+      if (mapContainer.mapInstance) {
+          // Remove the map instance if exists
+          mapContainer.mapInstance = null; // Clear the stored instance
+      }
+      mapContainer.remove(); // Removes the map container from the DOM
+      console.log('Map container removed');
+  } else {
+      console.log('Map container not found');
   }
 }
 function sendMsg(otheruserid){
