@@ -142,7 +142,6 @@ async function createProfileCard(user) {
   locationLink.className = 'location-link';
 
   const locationIcon = document.createElement('i');
-  locationIcon.textContent = 'LOCATION';
   locationIcon.className = 'fa-solid fa-globe';
   locationLink.appendChild(locationIcon);
   profileItem.appendChild(locationLink);
