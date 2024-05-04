@@ -9,32 +9,12 @@
     <link rel="stylesheet" href="scss/style.css" />
     <title>Profile Dropdown</title>
     <style>
-     .location-button {
-        position: absolute;
-        left: 10px;
-        bottom: 10px;
-        background-color: #6b238e; /* Tyrian purple background color */
-        color: #ffffff; /* White text color */
-        padding: 3px 10px; /* Padding for better visual appearance */
-        border: none; /* Remove border */
-        border-radius: 1px; /* Rounded corners */
-        cursor: pointer; /* Cursor style on hover */
-        font-size: 12px; /* Font size */
-        text-transform: uppercase; /* Uppercase text */
-        transition: background-color 0.3s ease; /* Smooth transition for background color */
-      }
-
-      .location-button:hover {
-        background-color: #4a145f; /* Darker Tyrian purple background color on hover */
-      }
-
       .location-link {
         position: absolute;
         left: 10px;
         bottom: 6px;
         font-size: 1.5em; /* Adjust the font size as desired */
       }
-
     </style>
   </head>
   <body>
@@ -95,5 +75,6 @@
         <!-- Profiles will be appended here by JavaScript -->
       </div>
     <script type="module" src="js/matching.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU&libraries=places"></script>
   </body>
 </html>

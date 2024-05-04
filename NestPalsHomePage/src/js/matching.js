@@ -149,44 +149,49 @@ async function createProfileCard(user) {
   locationLink.addEventListener('click', async () => {
     try {
         const stateName = user.state; // Assuming user.state contains the state name
-        const stateCoords = stateCoordinates[stateName]; // Fetching coordinates from stateCoordinates object
-
-        if (stateCoords) {
-            const width = 400;
-            const height = 400;
-            const left = (screen.width - width) / 2;
-            const top = 120;  
-            
-            const mapWindow = window.open('', 'MapWindow', `width=${width},height=${height},left=${left},top=${top}`);
-
-            const mapDiv = document.createElement('div'); // Create a div element for the map
-            mapDiv.id = 'map'; // Set the id of the div
-            mapDiv.style.height = '100%'; // Set the height of the div
-            mapWindow.document.body.appendChild(mapDiv); // Append the div to the body of the new window
-
-            const loader = new Loader({
-                apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU", // Replace with your Google Maps API key
-                version: "weekly",
-            });
-
-            loader.load().then(async () => {
-                const { Map } = await loader.importLibrary("maps");
-
-                new Map(mapDiv, {
-                    center: { lat: stateCoords.lat, lng: stateCoords.lng },
-                    zoom: 7,
+        
+        // Use the Geocoder to fetch coordinates based on the state name
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ address: stateName }, (results, status) => {
+            if (status === google.maps.GeocoderStatus.OK) {
+                const location = results[0].geometry.location;
+                
+                // Proceed with the code for opening the Google Maps popup using location.lat() and location.lng()
+                const width = 400;
+                const height = 400;
+                const left = (screen.width - width) / 2;
+                const top = 120;
+                
+                const mapWindow = window.open('', 'MapWindow', `width=${width},height=${height},left=${left},top=${top}`);
+                
+                const mapDiv = document.createElement('div');
+                mapDiv.id = 'map';
+                mapDiv.style.height = '100%';
+                mapWindow.document.body.appendChild(mapDiv);
+                
+                const loader = new Loader({
+                    apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU", // Replace with your Google Maps API key
+                    version: "weekly",
                 });
-            }).catch((e) => {
-                console.error("Error loading Google Maps:", e);
-            });
-        } else {
-            console.error(`Coordinates not found for state: ${stateName}`);
-        }
+                
+                loader.load().then(async () => {
+                    const { Map } = await loader.importLibrary("maps");
+                    
+                    new Map(mapDiv, {
+                        center: { lat: location.lat(), lng: location.lng() },
+                        zoom: 7,
+                    });
+                }).catch((e) => {
+                    console.error("Error loading Google Maps:", e);
+                });
+            } else {
+                console.error("Geocode was not successful for the following reason: " + status);
+            }
+        });
     } catch (error) {
         console.error("Error handling location button click:", error);
     }
 });
-
 
   // Create an <a> element for the chatbox logo link
   const chatboxLink = document.createElement('a');
