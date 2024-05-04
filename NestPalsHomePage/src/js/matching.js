@@ -131,7 +131,7 @@ async function createProfileCard(user) {
 
   const details = document.createElement('div');
   details.className = 'details';
-  details.textContent = `Budget: $${user.budget} | State: ${user.state}`;
+  details.textContent = `$${user.budget} | ${user.city}, ${user.state}`;
   detailsContainer.appendChild(details);
 
   profileItem.appendChild(detailsContainer);
@@ -148,11 +148,11 @@ async function createProfileCard(user) {
 
   locationLink.addEventListener('click', async () => {
     try {
-        const stateName = user.state; // Assuming user.state contains the state name
+        const address = `${user.city}, ${user.state}`;
         
         // Use the Geocoder to fetch coordinates based on the state name
         const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ address: stateName }, (results, status) => {
+        geocoder.geocode({ address: address }, (results, status) => {
             if (status === google.maps.GeocoderStatus.OK) {
                 const location = results[0].geometry.location;
                 
@@ -161,14 +161,62 @@ async function createProfileCard(user) {
                 const height = 400;
                 const left = (screen.width - width) / 2;
                 const top = 120;
-                
-                const mapWindow = window.open('', 'MapWindow', `width=${width},height=${height},left=${left},top=${top}`);
-                
+
+                // Create a new div element for the map container
+                const mapContainerDiv = document.createElement('div');
+                mapContainerDiv.id = 'map-container';
+                mapContainerDiv.style.display = 'flex'; // Set display to flex
+                mapContainerDiv.style.flexDirection = 'column-reverse'; // Reverse the order of items (map at the bottom)
+                mapContainerDiv.style.width = `${width}px`; // Set the width
+                mapContainerDiv.style.height = `${height}px`; // Set the height
+                mapContainerDiv.style.position = 'absolute'; // Set the position to absolute
+                mapContainerDiv.style.left = `${left}px`; // Set the left position
+                mapContainerDiv.style.top = `${top}px`; // Set the top position
+                mapContainerDiv.style.border = '2px solid #000'; // Add border for visualization
+                mapContainerDiv.style.borderRadius = '5px'; // Optional: Add border radius for rounded corners
+                mapContainerDiv.style.backgroundColor = '#fff'; // Optional: Add background color for better visibility
+
+                // Create a close button
+                const closeButton = document.createElement('button');
+                closeButton.textContent = 'X';
+                closeButton.style.position = 'absolute';
+                closeButton.style.top = '5px';
+                closeButton.style.right = '15px';
+                closeButton.style.padding = '0px';
+                closeButton.style.border = 'none';
+                closeButton.style.backgroundColor = 'transparent';
+                closeButton.style.cursor = 'pointer';
+                closeButton.addEventListener('click', () => {
+                    mapContainerDiv.remove();
+                });
+
+                // Append the close button to the map container div
+                mapContainerDiv.appendChild(closeButton);
+
+                // Create a label for user location
+                const locationLabel = document.createElement('div');
+                locationLabel.textContent = 'User Location:';
+                locationLabel.style.position = 'absolute';
+                locationLabel.style.top = '5px';
+                locationLabel.style.left = '10px'; // Position the label after the X button
+                locationLabel.style.fontSize = '14px'; // Adjust font size if needed
+
+                // Append the location label to the map container div
+                mapContainerDiv.appendChild(locationLabel);
+
+                // Append the map container div to the document body
+                document.body.appendChild(mapContainerDiv);
+
+                // Create a new div element for the map
                 const mapDiv = document.createElement('div');
                 mapDiv.id = 'map';
-                mapDiv.style.height = '100%';
-                mapWindow.document.body.appendChild(mapDiv);
-                
+                mapDiv.style.width = '100%'; // Set the width to fill the container
+                mapDiv.style.height = 'calc(100% - 30px)'; // Set the height to fill the container, subtracting height of close button
+
+                // Append the map div to the map container div
+                mapContainerDiv.appendChild(mapDiv);
+
+
                 const loader = new Loader({
                     apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU", // Replace with your Google Maps API key
                     version: "weekly",
@@ -179,8 +227,15 @@ async function createProfileCard(user) {
                     
                     new Map(mapDiv, {
                         center: { lat: location.lat(), lng: location.lng() },
-                        zoom: 7,
+                        zoom: 12,
                     });
+
+                    new google.maps.marker.AdvancedMarkerElement({
+                      position: { lat: location.lat(), lng: location.lng() },
+                      map: Map,
+                      title: 'City Location'
+                    });
+
                 }).catch((e) => {
                     console.error("Error loading Google Maps:", e);
                 });
@@ -199,7 +254,6 @@ async function createProfileCard(user) {
   chatboxLink.className = 'chatboxLink'; // Ensure this matches your CSS class for styling
 
   const chatIcon = document.createElement('i');
-  chatIcon.textContent = 'CHAT';
   chatIcon.className = 'fa-solid fa-comment';
   chatboxLink.appendChild(chatIcon);
   profileItem.appendChild(chatboxLink);
