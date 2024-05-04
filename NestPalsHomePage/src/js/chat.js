@@ -108,6 +108,7 @@ async function displayChatsTab(chatId){
 
         // Attach an event listener to the profile bar
         profileDiv.addEventListener('click', async() => {
+          await deleteMapContainer();
           const currentUsernamePromise = await getUsername(currentuser);
           const otherUsernamePromise = await getUsername(chatId);
           highlightProfile(profileDiv);
