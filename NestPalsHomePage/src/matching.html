@@ -22,6 +22,40 @@
         bottom: 6px;
         font-size: 1.5em; /* Adjust the font size as desired */
       }
+
+      .custom-map-container {
+          display: flex;
+          flex-direction: column-reverse;
+          width: 400px;
+          height: 400px;
+          position: absolute;
+          top: 120px;
+          border: 2px solid #000;
+          border-radius: 5px;
+          background-color: #fff;
+      }
+
+      .custom-close-button {
+        position: absolute;
+        top: 5px;
+        right: 15px;
+        padding: 0px;
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+      }
+
+      .custom-location-label {
+          position: absolute;
+          top: 5px;
+          left: 10px;
+          font-size: 14px;
+      }
+
+      .custom-map {
+          width: 100%;
+          height: calc(100% - 30px);
+      }
     </style>
   </head>
   <body>
