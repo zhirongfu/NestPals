@@ -121,8 +121,17 @@
                 flex-direction: column;
                 align-items: flex-start; /* Align items to the start of the container */
             }
-            .edit-btn {
+            .edit-btn1 {
+                cursor: pointer;
+                background-color: rgb(41, 169, 215);
+                color: #fff; /* Add text color for contrast */
+                border: none; /* Remove border */
+                padding: 10px 20px; /* Add padding for spacing */
+                border-radius: 15px; /* Add border radius for rounded corners */
+                transition: background-color 0.3s, color 0.3s; /* Add transition for smooth effect */
                 margin-top: 20px;
+            }
+            .edit-btn {
                 cursor: pointer;
                 background-color: rgb(41, 169, 215);
                 color: #fff; /* Add text color for contrast */
@@ -139,7 +148,33 @@
             .titlecard {
                 border-bottom: 5px solid rgba(0,0,0,0.5);
             }
-            
+
+            .summary {
+                margin-top: 15vh;
+            }
+
+            textarea {
+                width: 100%; /* Full width of the container */
+                padding: 10px;
+                font-size: 16px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                resize: vertical; /* Allow vertical resizing */
+                background-color: transparent;
+                border: 3px solid rgba(0, 0, 0, 0.5);
+                border-radius: 10px;
+                margin-bottom: 10px; /* Add margin to separate from actions */
+            }
+
+            .summary-actions {
+                display: flex;
+                justify-content: space-between; /* Space evenly between items */
+            }
+
+            #word-count {
+                margin-right: 20px; /* Add space between word count and button */
+            }
+
             #toggleButton {
                 padding: 5px;
                 margin-bottom: 20px;
@@ -213,9 +248,18 @@
                 </div>
                 <div class="fileuploadcontainer">
                     <input type="file" id="uploadpfp" accept="Image/png, Image/jpeg">
-                    <button class="edit-btn" id="edit-btn">Upload Image</button>
+                    <button class="edit-btn1" id="edit-btn">Upload Image</button>
                 </div>
-                
+                <div class="summary">
+                    <label for="user-summary">About Me (200 words max):</label>
+                    <div class="summary-content">
+                        <textarea id="user-summary" rows="5" maxlength="1000"></textarea>
+                        <div class="summary-actions">
+                            <div id="word-count">Words remaining: <span id="remaining-words">200</span></div>
+                            <button id="edit-bio-btn" class="edit-btn">Edit Bio</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="section2">
                 <div class="titlecard">

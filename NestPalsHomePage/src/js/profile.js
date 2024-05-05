@@ -229,6 +229,45 @@ onAuthStateChanged(auth, async (user) => {
       window.location.href = 'signin.html';
   }
 });
+const textarea = document.getElementById('user-summary');
+    const remainingWordsSpan = document.getElementById('remaining-words');
+
+    textarea.addEventListener('input', function() {
+        const maxLength = 200;
+        const currentLength = this.value.trim().split(/\s+/).length;
+        const remaining = maxLength - currentLength;
+
+        if (remaining < 0) {
+            const trimmedValue = this.value.trim().split(/\s+/).slice(0, maxLength).join(' ');
+            this.value = trimmedValue;
+        }
+
+        remainingWordsSpan.textContent = remaining.toString();
+    });
+
+    // Save bio to Firestore on button click
+    const saveButton = document.getElementById('save-bio-button');
+    if (saveButton) {
+        saveButton.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            if (user) {
+                const bio = textarea.value.trim();
+                const userDocRef = doc(db, 'users', user.uid);
+
+                try {
+                    await setDoc(userDocRef, { bio: bio }, { merge: true });
+                    console.log('Bio saved successfully:', bio);
+                    alert('Bio saved successfully!');
+                } catch (error) {
+                    console.error('Error saving bio:', error);
+                    alert('Failed to save bio. Please try again.');
+                }
+            } else {
+                console.log('No authenticated user.');
+                alert('User not authenticated. Please sign in.');
+            }
+        });
+    }
 
 document.addEventListener('DOMContentLoaded', () => {
     const toggleButton = document.getElementById('toggleButton');
@@ -389,5 +428,41 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (error) {
           console.error('Error saving edited values:', error);
       }
-  }  
+  } 
+const textarea = document.getElementById('user-summary');
+const remainingWordsSpan = document.getElementById('remaining-words');
+
+textarea.addEventListener('input', function() {
+    const maxLength = 200;
+    const currentLength = this.value.trim().split(/\s+/).length; // Count words
+    const remaining = maxLength - currentLength;
+
+    if (remaining < 0) {
+        const trimmedValue = this.value.trim().split(/\s+/).slice(0, maxLength).join(' ');
+        this.value = trimmedValue;
+    }
+
+    remainingWordsSpan.textContent = remaining.toString();
+});
+
+const editBioBtn = document.getElementById('edit-bio-btn');
+const userSummary = document.getElementById('user-summary');
+
+// Disable the textarea initially
+userSummary.disabled = true;
+
+// Function to handle button click
+editBioBtn.addEventListener('click', () => {
+    if (editBioBtn.textContent === 'Edit Bio') {
+        // Switch to edit mode
+        editBioBtn.textContent = 'Save'; // Change button text to "Save"
+        userSummary.disabled = false; // Enable textarea for editing
+        userSummary.focus(); // Set focus on textarea
+    } else {
+        // Switch to save mode
+        editBioBtn.textContent = 'Edit Bio'; // Change button text back to "Edit Bio"
+        userSummary.disabled = true; // Disable textarea after saving
+        // Perform save action here (e.g., send data to server)
+    }
+});
 });
