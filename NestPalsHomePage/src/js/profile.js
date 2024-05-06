@@ -449,20 +449,8 @@ const editBioBtn = document.getElementById('edit-bio-btn');
 const userSummary = document.getElementById('user-summary');
 
 // Disable the textarea initially
-userSummary.disabled = true;
+
 
 // Function to handle button click
-editBioBtn.addEventListener('click', () => {
-    if (editBioBtn.textContent === 'Edit Bio') {
-        // Switch to edit mode
-        editBioBtn.textContent = 'Save'; // Change button text to "Save"
-        userSummary.disabled = false; // Enable textarea for editing
-        userSummary.focus(); // Set focus on textarea
-    } else {
-        // Switch to save mode
-        editBioBtn.textContent = 'Edit Bio'; // Change button text back to "Edit Bio"
-        userSummary.disabled = true; // Disable textarea after saving
-        // Perform save action here (e.g., send data to server)
-    }
-});
+
 });
