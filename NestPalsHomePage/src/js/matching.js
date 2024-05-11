@@ -274,19 +274,30 @@ function deleteMapContainer() {
   }
 }
   
-  // Function to fetch profiles from Firestore
-  async function fetchProfiles() {
-    const profilesRef = collection(db, 'users');
-    const q = query(profilesRef, where('budget', '!=', ''));
-    const querySnapshot = await getDocs(q);
-    const currentUser = auth.currentUser;
+// Function to fetch profiles from Firestore based on budget range
+async function fetchProfiles(minBudget, maxBudget) {
+  const profilesRef = collection(db, 'users');
+  const querySnapshot = await getDocs(profilesRef);
+  const currentUser = auth.currentUser;
   const profileContainer = document.querySelector('.profile-container');
-  const profileCardsPromises = querySnapshot.docs
-    .filter(doc => doc.id !== currentUser.uid) // Filter out the current user's document
-    .map(doc => {
-      const user = { ...doc.data(), uid: doc.id }; // Include uid in the user object
-      return createProfileCard(user); // Return the promise created by createProfileCard
-    });
+
+  // Clear existing profile cards
+  profileContainer.innerHTML = '';
+
+  // Filter users based on budget range
+  const filteredUsers = querySnapshot.docs
+    .filter(doc => {
+      const userData = doc.data();
+      // Check if user has budget and if it's within the specified range
+      return userData.budget && parseInt(userData.budget) >= minBudget && parseInt(userData.budget) <= maxBudget;
+    })
+    .filter(doc => doc.id !== currentUser.uid); // Filter out the current user's document
+
+  // Create profile cards for filtered users
+  const profileCardsPromises = filteredUsers.map(async doc => {
+    const user = { ...doc.data(), uid: doc.id }; // Include uid in the user object
+    return await createProfileCard(user); // Return the promise created by createProfileCard
+  });
 
   // Wait for all profile cards to be created
   const profileCards = await Promise.all(profileCardsPromises);
@@ -296,6 +307,32 @@ function deleteMapContainer() {
     profileContainer.appendChild(profileCard);
   });
 }
+
+// Event listener for min budget input field
+const minBudgetInput = document.getElementById('minBudget');
+minBudgetInput.addEventListener('input', () => {
+  const minBudget = parseInt(minBudgetInput.value);
+  const maxBudget = parseInt(document.getElementById('maxBudget').value);
+  if (!isNaN(minBudget) && !isNaN(maxBudget)) {
+    fetchProfiles(minBudget, maxBudget);
+  }
+});
+
+// Event listener for max budget input field
+const maxBudgetInput = document.getElementById('maxBudget');
+maxBudgetInput.addEventListener('input', () => {
+  const minBudget = parseInt(document.getElementById('minBudget').value);
+  const maxBudget = parseInt(maxBudgetInput.value);
+  if (!isNaN(minBudget) && !isNaN(maxBudget)) {
+    fetchProfiles(minBudget, maxBudget);
+  }
+});
+
+// Initial fetch of profiles based on default min and max budget values
+const initialMinBudget = parseInt(document.getElementById('minBudget').value);
+const initialMaxBudget = parseInt(document.getElementById('maxBudget').value);
+fetchProfiles(initialMinBudget, initialMaxBudget);
+
 async function setUserProfilePictureAsNavbarLogo(userId) {
   try {
     const docRef = doc(db, "pfp", userId);

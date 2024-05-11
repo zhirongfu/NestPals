@@ -56,6 +56,65 @@
           width: 100%;
           height: calc(100% - 30px);
       }
+
+      .qualities-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #f0f0f0; /* Background color of the bar */
+        padding: 10px 20px; /* Padding around the content */
+        border-bottom: 1px solid #ccc; /* Bottom border */
+      }
+
+      .qualities-bar .qualities-dropdown {
+        display: flex;
+        align-items: center;
+      }
+
+      .qualities-bar .qualities-dropdown .dropdown-btn {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .qualities-bar .qualities-dropdown .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #fff; /* Background color of dropdown */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Box shadow for dropdown */
+        z-index: 1;
+      }
+
+      .qualities-bar .qualities-dropdown .dropdown-content label {
+        display: block;
+        padding: 8px 16px;
+      }
+
+      .qualities-bar .qualities-dropdown .dropdown-content label:hover {
+        background-color: #f0f0f0; /* Background color on hover */
+      }
+
+      .qualities-bar .qualities-dropdown .dropdown-content input[type="checkbox"] {
+        margin-right: 8px;
+      }
+
+      .qualities-bar .budget-input label {
+        margin-right: 10px;
+      }
+
+      .qualities-bar .budget-input input[type="number"] {
+        width: 100px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      /* Show dropdown content when dropdown button is hovered */
+      .qualities-bar .qualities-dropdown:hover .dropdown-content {
+        display: block;
+      }
+
     </style>
   </head>
   <body>
@@ -112,6 +171,22 @@
         </ul>
       </div>
     </nav>
+    <div class="qualities-bar">
+      <div class="qualities-dropdown">
+        <button class="dropdown-btn">Qualities</button>
+        <div class="dropdown-content">
+          <label><input type="checkbox" id="smokeCheckbox">Does not smoke</label>
+          <label><input type="checkbox" id="cleanlinessCheckbox">Is cleanliness oriented</label>
+          <label><input type="checkbox" id="petsCheckbox">Comfortable with pets</label>
+        </div>
+      </div>
+      <div class="budget-input">
+        <label for="minBudget">Min Budget:</label>
+        <input type="number" id="minBudget" placeholder="Min Budget">
+        <label for="maxBudget">Max Budget:</label>
+        <input type="number" id="maxBudget" placeholder="Max Budget">
+      </div>
+    </div>
     <div class="profile-container">
         <!-- Profiles will be appended here by JavaScript -->
       </div>
