@@ -225,14 +225,14 @@ locationLink.addEventListener('click', async () => {
                 loader.load().then(async () => {
                     const { Map } = await loader.importLibrary("maps");
                     
-                    new Map(mapDiv, {
+                    const map = new Map(mapDiv, {
                         center: { lat: location.lat(), lng: location.lng() },
                         zoom: 12,
                     });
 
-                    new google.maps.marker.AdvancedMarkerElement({
+                    new google.maps.Marker({
                       position: { lat: location.lat(), lng: location.lng() },
-                      map: Map,
+                      map: map,
                       title: 'City Location'
                     });
 
