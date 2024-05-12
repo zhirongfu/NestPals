@@ -146,9 +146,30 @@ async function createProfileCard(user) {
   locationLink.appendChild(locationIcon);
   profileItem.appendChild(locationLink);
 
+  // Modify the event listener for the location link to call deleteMapContainer before creating a new map
+locationLink.addEventListener('click', async () => {
+  try {
+      // Call the deleteMapContainer function to remove any existing map container
+      deleteMapContainer();
+
+      // Your existing code for creating the map goes here...
+      // Ensure that the map container is removed when the close button is clicked as well
+      closeButton.addEventListener('click', () => {
+          deleteMapContainer();
+      });
+
+  } catch (error) {
+      console.error("Error handling location button click:", error);
+  }
+});
+
+
   locationLink.addEventListener('click', async () => {
     try {
-        const address = `${user.city}, ${user.state}`;
+      // Call the deleteMapContainer function to remove any existing map container
+      deleteMapContainer();  
+      
+      const address = `${user.city}, ${user.state}`;
         
         // Use the Geocoder to fetch coordinates based on the state name
         const geocoder = new google.maps.Geocoder();
@@ -158,34 +179,18 @@ async function createProfileCard(user) {
                 
                 // Proceed with the code for opening the Google Maps popup using location.lat() and location.lng()
                 const width = 400;
-                const height = 400;
                 const left = (screen.width - width) / 2;
-                const top = 120;
 
                 // Create a new div element for the map container
                 const mapContainerDiv = document.createElement('div');
-                mapContainerDiv.id = 'map-container';
-                mapContainerDiv.style.display = 'flex'; // Set display to flex
-                mapContainerDiv.style.flexDirection = 'column-reverse'; // Reverse the order of items (map at the bottom)
-                mapContainerDiv.style.width = `${width}px`; // Set the width
-                mapContainerDiv.style.height = `${height}px`; // Set the height
-                mapContainerDiv.style.position = 'absolute'; // Set the position to absolute
+                mapContainerDiv.className = 'custom-map-container';
                 mapContainerDiv.style.left = `${left}px`; // Set the left position
-                mapContainerDiv.style.top = `${top}px`; // Set the top position
-                mapContainerDiv.style.border = '2px solid #000'; // Add border for visualization
-                mapContainerDiv.style.borderRadius = '5px'; // Optional: Add border radius for rounded corners
-                mapContainerDiv.style.backgroundColor = '#fff'; // Optional: Add background color for better visibility
+
 
                 // Create a close button
                 const closeButton = document.createElement('button');
                 closeButton.textContent = 'X';
-                closeButton.style.position = 'absolute';
-                closeButton.style.top = '5px';
-                closeButton.style.right = '15px';
-                closeButton.style.padding = '0px';
-                closeButton.style.border = 'none';
-                closeButton.style.backgroundColor = 'transparent';
-                closeButton.style.cursor = 'pointer';
+                closeButton.className = 'custom-close-button';
                 closeButton.addEventListener('click', () => {
                     mapContainerDiv.remove();
                 });
@@ -196,10 +201,7 @@ async function createProfileCard(user) {
                 // Create a label for user location
                 const locationLabel = document.createElement('div');
                 locationLabel.textContent = 'User Location:';
-                locationLabel.style.position = 'absolute';
-                locationLabel.style.top = '5px';
-                locationLabel.style.left = '10px'; // Position the label after the X button
-                locationLabel.style.fontSize = '14px'; // Adjust font size if needed
+                locationLabel.className = 'custom-location-label';
 
                 // Append the location label to the map container div
                 mapContainerDiv.appendChild(locationLabel);
@@ -209,9 +211,7 @@ async function createProfileCard(user) {
 
                 // Create a new div element for the map
                 const mapDiv = document.createElement('div');
-                mapDiv.id = 'map';
-                mapDiv.style.width = '100%'; // Set the width to fill the container
-                mapDiv.style.height = 'calc(100% - 30px)'; // Set the height to fill the container, subtracting height of close button
+                mapDiv.className = 'custom-map';
 
                 // Append the map div to the map container div
                 mapContainerDiv.appendChild(mapDiv);
@@ -225,14 +225,14 @@ async function createProfileCard(user) {
                 loader.load().then(async () => {
                     const { Map } = await loader.importLibrary("maps");
                     
-                    new Map(mapDiv, {
+                    const map = new Map(mapDiv, {
                         center: { lat: location.lat(), lng: location.lng() },
                         zoom: 12,
                     });
 
-                    new google.maps.marker.AdvancedMarkerElement({
+                    new google.maps.Marker({
                       position: { lat: location.lat(), lng: location.lng() },
-                      map: Map,
+                      map: map,
                       title: 'City Location'
                     });
 
@@ -242,6 +242,11 @@ async function createProfileCard(user) {
             } else {
                 console.error("Geocode was not successful for the following reason: " + status);
             }
+        });
+
+        // Ensure that the map container is removed when the close button is clicked as well
+        closeButton.addEventListener('click', () => {
+          deleteMapContainer();
         });
     } catch (error) {
         console.error("Error handling location button click:", error);
@@ -261,20 +266,38 @@ async function createProfileCard(user) {
   return profileItem;
 }
 
+// Function to delete the map container
+function deleteMapContainer() {
+  const mapContainer = document.querySelector('.custom-map-container');
+  if (mapContainer) {
+      mapContainer.remove();
+  }
+}
   
-  // Function to fetch profiles from Firestore
-  async function fetchProfiles() {
-    const profilesRef = collection(db, 'users');
-    const q = query(profilesRef, where('budget', '!=', ''));
-    const querySnapshot = await getDocs(q);
-    const currentUser = auth.currentUser;
+// Function to fetch profiles from Firestore based on budget range
+async function fetchProfiles(minBudget, maxBudget) {
+  const profilesRef = collection(db, 'users');
+  const querySnapshot = await getDocs(profilesRef);
+  const currentUser = auth.currentUser;
   const profileContainer = document.querySelector('.profile-container');
-  const profileCardsPromises = querySnapshot.docs
-    .filter(doc => doc.id !== currentUser.uid) // Filter out the current user's document
-    .map(doc => {
-      const user = { ...doc.data(), uid: doc.id }; // Include uid in the user object
-      return createProfileCard(user); // Return the promise created by createProfileCard
-    });
+
+  // Clear existing profile cards
+  profileContainer.innerHTML = '';
+
+  // Filter users based on budget range
+  const filteredUsers = querySnapshot.docs
+    .filter(doc => {
+      const userData = doc.data();
+      // Check if user has budget and if it's within the specified range
+      return userData.budget && parseInt(userData.budget) >= minBudget && parseInt(userData.budget) <= maxBudget;
+    })
+    .filter(doc => doc.id !== currentUser.uid); // Filter out the current user's document
+
+  // Create profile cards for filtered users
+  const profileCardsPromises = filteredUsers.map(async doc => {
+    const user = { ...doc.data(), uid: doc.id }; // Include uid in the user object
+    return await createProfileCard(user); // Return the promise created by createProfileCard
+  });
 
   // Wait for all profile cards to be created
   const profileCards = await Promise.all(profileCardsPromises);
@@ -284,6 +307,32 @@ async function createProfileCard(user) {
     profileContainer.appendChild(profileCard);
   });
 }
+
+// Event listener for min budget input field
+const minBudgetInput = document.getElementById('minBudget');
+minBudgetInput.addEventListener('input', () => {
+  const minBudget = parseInt(minBudgetInput.value);
+  const maxBudget = parseInt(document.getElementById('maxBudget').value);
+  if (!isNaN(minBudget) && !isNaN(maxBudget)) {
+    fetchProfiles(minBudget, maxBudget);
+  }
+});
+
+// Event listener for max budget input field
+const maxBudgetInput = document.getElementById('maxBudget');
+maxBudgetInput.addEventListener('input', () => {
+  const minBudget = parseInt(document.getElementById('minBudget').value);
+  const maxBudget = parseInt(maxBudgetInput.value);
+  if (!isNaN(minBudget) && !isNaN(maxBudget)) {
+    fetchProfiles(minBudget, maxBudget);
+  }
+});
+
+// Initial fetch of profiles based on default min and max budget values
+const initialMinBudget = parseInt(document.getElementById('minBudget').value);
+const initialMaxBudget = parseInt(document.getElementById('maxBudget').value);
+fetchProfiles(initialMinBudget, initialMaxBudget);
+
 async function setUserProfilePictureAsNavbarLogo(userId) {
   try {
     const docRef = doc(db, "pfp", userId);
