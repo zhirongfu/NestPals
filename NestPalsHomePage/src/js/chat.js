@@ -357,11 +357,12 @@ function createChatBox(otheruserid) {
   }
 }
 
-async function getState(userId) {
+async function getCityState(userId) {
   const userRef = doc(db, "users", userId);
   const userDoc = await getDoc(userRef);
   if (userDoc.exists()) {
-      return userDoc.data().state;  // Assuming the username field is stored in the user document
+      const locationString = userDoc.data().city + ', ' + userDoc.data().state;
+      return locationString;  // Assuming the username field is stored in the user document
   } else {
       throw new Error(`User with ID ${userId} does not exist.`);
   }
@@ -401,8 +402,8 @@ async function openGmaps(otheruserid){
     //console.log(`${otheruserid}`);
     const ownUserid = auth.currentUser.uid;
     //console.log(`${ownUserid}`);
-    const ownUserState = await getState(ownUserid);
-    const otherUserState = await getState(otheruserid);
+    const ownUserState = await getCityState(ownUserid);
+    const otherUserState = await getCityState(otheruserid);
     const ownBuget = parseInt(await getBudget(ownUserid), 10);
     const otherUserBudget = +await getBudget(otheruserid);
     //console.log(`${otherUserState}`);
@@ -424,46 +425,70 @@ async function displayMapAtMidPoint(midPoint) {
   let conversationForm = document.getElementById('conversation-form');
   let mapContainer = document.getElementById('map-container');
 
-  // Check if the map container exists, if not create it
+  // Check if the map container exists, if not, create it
   if (!mapContainer) {
-      mapContainer = document.createElement('div');
-      mapContainer.id = 'map-container';
-      mapContainer.className = 'map-container';
-      conversationForm.prepend(mapContainer);
+    mapContainer = document.createElement('div');
+    mapContainer.id = 'map-container';
+    mapContainer.className = 'map-container';
+    conversationForm.prepend(mapContainer);
   } else {
-      // Check if a map instance already exists
-      if (mapContainer.mapInstance) {
-          console.log("Map already exists. Deleting...");
-          deleteMapContainer(); // Call the function to remove the map
-          return; // Exit the function to prevent re-initialization in this call
-      }
+    // Check if a map instance already exists
+    if (mapContainer.mapInstance) {
+      console.log("Map already exists. Deleting...");
+      deleteMapContainer(); // Call the function to remove the map
+      return; // Exit the function to prevent re-initialization in this call
+    }
   }
 
   // Create a new map inside the 'map-container' div
   const map = new google.maps.Map(mapContainer, {
-      center: midPoint,
-      zoom: 12  // Adjusted zoom level for better overview
+    center: midPoint,
+    zoom: 15  // Adjusted zoom level for better overview
   });
   mapContainer.mapInstance = map; // Store the map instance on the container
 
-  // Add a marker using the appropriate method
-  if (google.maps.marker && google.maps.marker.AdvancedMarkerElement) {
-      new google.maps.marker.AdvancedMarkerElement({
-          position: midPoint,
-          map: map,
-          title: 'Midpoint Location'
-      });
-  } else {
-      new google.maps.Marker({
-          position: midPoint,
-          map: map,
-          title: 'Midpoint Location'
-      });
-  }
+  // Create a marker at the midpoint
+  new google.maps.Marker({
+    position: midPoint,
+    map: map,
+    title: 'Midpoint Location'
+  });
 
   console.log("Map displayed at midpoint:", midPoint);
+
+  // Find and display nearby places
+  findNearbyPlaces(map, midPoint);
 }
 
+// Function to find and display nearby places
+function findNearbyPlaces(map, location) {
+  const service = new google.maps.places.PlacesService(map);
+  const request = {
+    location: location,
+    radius: '500', // Search within 500 meters
+    type: ['real_estate_agency'] 
+  };
+
+  service.nearbySearch(request, (results, status) => {
+    if (status === google.maps.places.PlacesServiceStatus.OK) {
+      console.log('Nearby places found:', results);
+      results.forEach(place => {
+        createPlaceMarker(place, map);
+      });
+    } else {
+      console.error('Failed to find nearby places:', status);
+    }
+  });
+}
+
+// Function to create a marker for each place
+function createPlaceMarker(place, map) {
+  new google.maps.Marker({
+    position: place.geometry.location,
+    map: map,
+    title: place.name
+  });
+}
 async function deleteMapContainer() {
   let mapContainer = document.getElementById('map-container');
   if (mapContainer) {
