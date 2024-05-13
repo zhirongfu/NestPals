@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getFirestore, collection, query, where, doc, getDoc, getDocs, addDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { use } from 'react';
 
 //our Firebase configuration
 const firebaseConfig = {
@@ -200,7 +201,8 @@ if (!user) {
     occupation: occupation,
     pets: pets,
     interests: interests
-  },{ merge: true });; 
+  },{ merge: true });;
+    await writeMatrix(user.uid);
     alert("Questionnaire submitted successfully!");
     window.location.href="matching.html";
     document.getElementById('questionnaire-form').reset();
@@ -209,4 +211,31 @@ if (!user) {
     alert("An error occurred while submitting the questionnaire. Please try again later.");
 }
 }
+//function to create data matrix for ml later on
+async function writeMatrix(userid){
+  const userDocRef = doc(db, "users", userid);
+  const userSnap = await getDoc(userDocRef);
+  
+  if (userSnap.exists()) {
+    const userData = userSnap.data();
+    
+    const age = parseInt(userData.age, 10) || 0; // convert age to number
+    const genderScores = {'male':1, 'female':2, 'other':3};
+    const gender = genderScores[userData.gender] || 0
+    const budget = parseInt(userData.budget, 10)/1000 || 0; // Convert budget to number if stored as string
+    const cityScores = {'Brooklyn': 1,'Staten Island': 2,'Manhattan': 3,'Queens': 4,'Bronx': 5};
+    const city = cityScores[userData.city] || 0;
+    const smoking = userData.smoking === 'smoker' ? 1 : 0; // Convert smoker status to 0 or 1
+    const pets = userData.pets === 'yes' ? 1 : 0;
+    const cleanlinessScores = { 'neat': 3, 'average': 2, 'messy': 1 };
+    const cleanliness = cleanlinessScores[userData.cleanliness] || 0; // Provide a default value if undefined
 
+    // Update the document with the new data matrix
+    await updateDoc(userDocRef, {
+      datamatrix: [age, gender, budget, city, smoking, pets, cleanliness]
+    });
+
+  } else {
+    console.log("User document does not exist!");
+  }
+}

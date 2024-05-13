@@ -241,7 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const url = await getDownloadURL(fileRef);
       return url;
     } else {
-      throw new Error("Profile picture not found.");
+      const defaultFileRef = storageRef(storage, 'pfp/DefaultNestPalsPfp7361/Screenshot 2024-05-12 194811.png');
+      const defaultUrl = await getDownloadURL(defaultFileRef);
+      return defaultUrl;
     }
   }
   

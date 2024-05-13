@@ -1,8 +1,9 @@
 import { Loader } from "@googlemaps/js-api-loader";
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, collection, query, where, getDocs,setDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { use } from "react";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
@@ -13,18 +14,6 @@ const firebaseConfig = {
   appId: "1:377954426735:web:92eaef2c3160067572529a"
 };
 
-const stateCoordinates = {
-  "Alabama": { lat: 32.806671, lng: -86.791130 }, "Alaska": { lat: 61.370716, lng: -152.404419 }, "Arizona": { lat: 33.729759, lng: -111.431221 }, "Arkansas": { lat: 34.969704, lng: -92.373123 }, "California": { lat: 36.116203, lng: -119.681564 },
-  "Colorado": { lat: 39.059811, lng: -105.311104 }, "Connecticut": { lat: 41.597782, lng: -72.755371 }, "Delaware": { lat: 39.318523, lng: -75.507141 }, "Florida": { lat: 27.766279, lng: -81.686783 }, "Georgia": { lat: 33.040619, lng: -83.643074 },
-  "Hawaii": { lat: 21.094318, lng: -157.498337 }, "Idaho": { lat: 44.240459, lng: -114.478828 }, "Illinois": { lat: 40.349457, lng: -88.986137 }, "Indiana": { lat: 39.849426, lng: -86.258278 }, "Iowa": { lat: 42.011539, lng: -93.210526 },
-  "Kansas": { lat: 38.526600, lng: -96.726486 }, "Kentucky": { lat: 37.668140, lng: -84.670067 }, "Louisiana": { lat: 31.169546, lng: -91.867805 }, "Maine": { lat: 44.693947, lng: -69.381927 }, "Maryland": { lat: 39.063946, lng: -76.802101 },
-  "Massachusetts": { lat: 42.230171, lng: -71.530106 }, "Michigan": { lat: 43.326618, lng: -84.536095 }, "Minnesota": { lat: 45.694454, lng: -93.900192 }, "Mississippi": { lat: 32.741646, lng: -89.678696 }, "Missouri": { lat: 38.456085, lng: -92.288368 },
-  "Montana": { lat: 46.921925, lng: -110.454353 }, "Nebraska": { lat: 41.125370, lng: -98.268082 }, "Nevada": { lat: 38.313515, lng: -117.055374 }, "New Hampshire": { lat: 43.452492, lng: -71.563896 }, "New Jersey": { lat: 40.298904, lng: -74.521011 },
-  "New Mexico": { lat: 34.840515, lng: -106.248482 }, "New York": { lat: 42.165726, lng: -74.948051 }, "North Carolina": { lat: 35.630066, lng: -79.806419 }, "North Dakota": { lat: 47.528912, lng: -99.784012 }, "Ohio": { lat: 40.388783, lng: -82.764915 },
-  "Oklahoma": { lat: 35.565342, lng: -96.928917 }, "Oregon": { lat: 44.572021, lng: -122.070938 }, "Pennsylvania": { lat: 40.590752, lng: -77.209755 }, "Rhode Island": { lat: 41.680893, lng: -71.511780 }, "South Carolina": { lat: 33.856892, lng: -80.945007 },
-  "South Dakota": { lat: 44.299782, lng: -99.438828 }, "Tennessee": { lat: 35.747845, lng: -86.692345 }, "Texas": { lat: 31.054487, lng: -97.563461 }, "Utah": { lat: 40.150032, lng: -111.862434 }, "Vermont": { lat: 44.045876, lng: -72.710686 },
-  "Virginia": { lat: 37.769337, lng: -78.169968 }, "Washington": { lat: 47.400902, lng: -121.490494 }, "West Virginia": { lat: 38.491226, lng: -80.954903 }, "Wisconsin": { lat: 44.268543, lng: -89.616508 }, "Wyoming": { lat: 42.755966, lng: -107.302490 }
-};
 
 
 // Initialize Firebase
@@ -65,28 +54,68 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     });
   });
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // User is signed in, fetch their name
-      const userDocRef = doc(db, 'users', user.uid);
-      getDoc(userDocRef).then((docSnap) => {
-        if (docSnap.exists()) {
-          const userName = docSnap.data().username;
-          // Display the user's name
-          document.querySelector('.username').textContent = userName;
-        } else {
-          // Handle the case where the user document does not exist
-          console.error("No such document!");
-        }
-      }).catch((error) => {
-        console.error("Error fetching user data:", error);
-      });
-    } else {
-      // Handle user not signed in or other actions
-      window.location.href='signin.html';
-    }
-  });
+        try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap.exists()) {
+                //writeMatrix(user.uid);
+                await fetchProfiles();// Initial fetch of profiles with no budget filter
+                const userName = docSnap.data().username;
+                document.querySelector('.username').textContent = userName;
+            } else {
+                console.log('No user data available');
+            }
 
+            const pfpdocRef = doc(db, "pfp", user.uid);
+            const pfpdocSnap = await getDoc(pfpdocRef);
+            const userpfp = document.querySelector('.profile-img');
+            if (pfpdocSnap.exists() && pfpdocSnap.data().filePath) {
+                const filePath = pfpdocSnap.data().filePath;
+                const fileRef = storageRef(storage, filePath);
+                const url = await getDownloadURL(fileRef);
+                userpfp.style.backgroundImage = `url('${url}')`;
+            } else {
+                const defaultFileRef = storageRef(storage, 'pfp/DefaultNestPalsPfp7361/Screenshot 2024-05-12 194811.png');
+                const defaultUrl = await getDownloadURL(defaultFileRef);
+                userpfp.style.backgroundImage = `url('${defaultUrl}')`;
+            }
+        } catch (error) {
+            console.error("Error processing user data:", error);
+        }
+    } else {
+        console.log('User is not signed in.');
+        window.location.href = 'signin.html';
+    }
+});
+/*async function writeMatrix(userid){
+  const userDocRef = doc(db, "users", userid);
+  const userSnap = await getDoc(userDocRef);
+  
+  if (userSnap.exists()) {
+    const userData = userSnap.data();
+    
+    const age = parseInt(userData.age, 10) || 0; // convert age to number
+    const genderScores = {'male':1, 'female':2, 'other':3};
+    const gender = genderScores[userData.gender] || 0
+    const budget = parseInt(userData.budget, 10)/1000 || 0; // Convert budget to number if stored as string
+    const cityScores = {'Brooklyn': 1,'Staten Island': 2,'Manhattan': 3,'Queens': 4,'Bronx': 5};
+    const city = cityScores[userData.city] || 0;
+    const smoking = userData.smoking === 'smoker' ? 1 : 0; // Convert smoker status to 0 or 1
+    const pets = userData.pets === 'yes' ? 1 : 0;
+    const cleanlinessScores = { 'neat': 3, 'average': 2, 'messy': 1 };
+    const cleanliness = cleanlinessScores[userData.cleanliness] || 0; // Provide a default value if undefined
+
+    // Update the document with the new data matrix
+    await updateDoc(userDocRef, {
+      datamatrix: [age, gender, budget, city, smoking, pets, cleanliness]
+    });
+
+  } else {
+    console.log("User document does not exist!");
+  }
+}*/
 // Function to create a profile card
 async function createProfileCard(user) {
   const profileItem = document.createElement('div');
@@ -107,8 +136,12 @@ async function createProfileCard(user) {
               const url = await getDownloadURL(fileRef);
               img.src = url;
           } else {
-              console.log("Document or filePath field missing");
-              img.src = 'default-avatar.png'; // Fallback image
+              /*if(storageRef(storage, 'pfp/DefaultNestPalsPfp7361/Screenshot 2024-05-12 194811.png')){
+                console.log('doc exists');
+              }*/
+              const defaultfileref = storageRef(storage, 'pfp/DefaultNestPalsPfp7361/Screenshot 2024-05-12 194811.png');//path to deafult pfp
+              const defaulturl = await getDownloadURL(defaultfileref);
+              img.src = defaulturl; // sts the img src to defalt hardcoded pfp in fb
           }
       } catch (error) {
           console.error("Error fetching image URL:", error);
@@ -273,89 +306,61 @@ function deleteMapContainer() {
       mapContainer.remove();
   }
 }
-  
-// Function to fetch profiles from Firestore based on budget range
-async function fetchProfiles(minBudget, maxBudget) {
+// Function to fetch profiles from Firestore based on optional budget range
+async function fetchProfiles(minBudget = null, maxBudget = null) {
   const profilesRef = collection(db, 'users');
-  const querySnapshot = await getDocs(profilesRef);
+  // Query for users with a defined non-empty budget
+  const budgetQuery = query(profilesRef, where('budget', '!=', ''));
+  const querySnapshot = await getDocs(budgetQuery);
   const currentUser = auth.currentUser;
   const profileContainer = document.querySelector('.profile-container');
 
   // Clear existing profile cards
   profileContainer.innerHTML = '';
 
-  // Filter users based on budget range
-  const filteredUsers = querySnapshot.docs
-    .filter(doc => {
+  // Filter users based on budget range if both min and max budgets are provided
+  let filteredUsers = querySnapshot.docs;
+  if (minBudget !== null && maxBudget !== null) {
+    filteredUsers = filteredUsers.filter(doc => {
       const userData = doc.data();
-      // Check if user has budget and if it's within the specified range
-      return userData.budget && parseInt(userData.budget) >= minBudget && parseInt(userData.budget) <= maxBudget;
-    })
-    .filter(doc => doc.id !== currentUser.uid); // Filter out the current user's document
+      return parseInt(userData.budget) >= minBudget && parseInt(userData.budget) <= maxBudget;
+    });
+  }
+
+  // Exclude current user's document
+  filteredUsers = filteredUsers.filter(doc => doc.id !== currentUser.uid);
 
   // Create profile cards for filtered users
-  const profileCardsPromises = filteredUsers.map(async doc => {
-    const user = { ...doc.data(), uid: doc.id }; // Include uid in the user object
-    return await createProfileCard(user); // Return the promise created by createProfileCard
-  });
-
-  // Wait for all profile cards to be created
-  const profileCards = await Promise.all(profileCardsPromises);
-
-  // Append all profile cards to the container at once
+   // Create profile cards for filtered users
+   const profileCards = await Promise.all(filteredUsers.map(async doc => {
+    //await writeMatrix(doc.id); // Ensure the matrix is written before creating the profile card.
+    return createProfileCard({ ...doc.data(), uid: doc.id }); // Then create the profile card.
+}));
+   // Append all profile cards to the container
   profileCards.forEach(profileCard => {
-    profileContainer.appendChild(profileCard);
-  });
+      profileContainer.appendChild(profileCard);
+   });
 }
 
-// Event listener for min budget input field
-const minBudgetInput = document.getElementById('minBudget');
-minBudgetInput.addEventListener('input', () => {
-  const minBudget = parseInt(minBudgetInput.value);
+// Event listeners for min and max budget input fields
+document.getElementById('minBudget').addEventListener('input', () => {
+  const minBudget = parseInt(document.getElementById('minBudget').value);
   const maxBudget = parseInt(document.getElementById('maxBudget').value);
   if (!isNaN(minBudget) && !isNaN(maxBudget)) {
     fetchProfiles(minBudget, maxBudget);
   }
 });
 
-// Event listener for max budget input field
-const maxBudgetInput = document.getElementById('maxBudget');
-maxBudgetInput.addEventListener('input', () => {
+document.getElementById('maxBudget').addEventListener('input', () => {
   const minBudget = parseInt(document.getElementById('minBudget').value);
-  const maxBudget = parseInt(maxBudgetInput.value);
+  const maxBudget = parseInt(document.getElementById('maxBudget').value);
   if (!isNaN(minBudget) && !isNaN(maxBudget)) {
     fetchProfiles(minBudget, maxBudget);
   }
 });
 
-// Initial fetch of profiles based on default min and max budget values
-const initialMinBudget = parseInt(document.getElementById('minBudget').value);
-const initialMaxBudget = parseInt(document.getElementById('maxBudget').value);
-fetchProfiles(initialMinBudget, initialMaxBudget);
 
-async function setUserProfilePictureAsNavbarLogo(userId) {
-  try {
-    const docRef = doc(db, "pfp", userId);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists() && docSnap.data().filePath) {
-      const filePath = docSnap.data().filePath;
-      const fileRef = storageRef(storage, filePath);
-      const url = await getDownloadURL(fileRef);
-
-      const profileImgDiv = document.querySelector('.profile-img');
-      if (profileImgDiv) {
-        profileImgDiv.style.backgroundImage = `url('${url}')`;
-        profileImgDiv.style.backgroundSize = 'cover';
-        profileImgDiv.style.backgroundPosition = 'center';
-      }
-    } else {
-      console.log("Document or filePath field missing");
-    }
-  } catch (error) {
-    console.error("Error fetching image URL:", error);
-  }
-}
-  onAuthStateChanged(auth, (user) => {
+/*  onAuthStateChanged(auth, (user) => {
     if (user) {
         // Now that we have a confirmed user, call fetchProfiles or pass the user down
         fetchProfiles(); // If fetchProfiles doesn't directly use auth.currentUser
@@ -364,4 +369,4 @@ async function setUserProfilePictureAsNavbarLogo(userId) {
     else {
         window.location.href='signin.html';
     }
-});
+});*/

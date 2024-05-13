@@ -9,111 +9,6 @@
     <link rel="stylesheet" href="scss/style.css" />
     <title>Profile Dropdown</title>
     <style>
-      .location-link {
-        position: absolute;
-        left: 10px;
-        bottom: 6px;
-        font-size: 1.5em; /* Adjust the font size as desired */
-      }
-
-      .chatboxLink {
-        position: absolute;
-        right: 10px;
-        bottom: 6px;
-        font-size: 1.5em; /* Adjust the font size as desired */
-      }
-
-      .custom-map-container {
-          display: flex;
-          flex-direction: column-reverse;
-          width: 400px;
-          height: 400px;
-          position: absolute;
-          top: 120px;
-          border: 2px solid #000;
-          border-radius: 5px;
-          background-color: #fff;
-      }
-
-      .custom-close-button {
-        position: absolute;
-        top: 5px;
-        right: 15px;
-        padding: 0px;
-        border: none;
-        background-color: transparent;
-        cursor: pointer;
-      }
-
-      .custom-location-label {
-          position: absolute;
-          top: 5px;
-          left: 10px;
-          font-size: 14px;
-      }
-
-      .custom-map {
-          width: 100%;
-          height: calc(100% - 30px);
-      }
-
-      .qualities-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #f0f0f0; /* Background color of the bar */
-        padding: 10px 20px; /* Padding around the content */
-        border-bottom: 1px solid #ccc; /* Bottom border */
-      }
-
-      .qualities-bar .qualities-dropdown {
-        display: flex;
-        align-items: center;
-      }
-
-      .qualities-bar .qualities-dropdown .dropdown-btn {
-        background-color: transparent;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-      }
-
-      .qualities-bar .qualities-dropdown .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #fff; /* Background color of dropdown */
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Box shadow for dropdown */
-        z-index: 1;
-      }
-
-      .qualities-bar .qualities-dropdown .dropdown-content label {
-        display: block;
-        padding: 8px 16px;
-      }
-
-      .qualities-bar .qualities-dropdown .dropdown-content label:hover {
-        background-color: #f0f0f0; /* Background color on hover */
-      }
-
-      .qualities-bar .qualities-dropdown .dropdown-content input[type="checkbox"] {
-        margin-right: 8px;
-      }
-
-      .qualities-bar .budget-input label {
-        margin-right: 10px;
-      }
-
-      .qualities-bar .budget-input input[type="number"] {
-        width: 100px;
-        padding: 5px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-      }
-
-      /* Show dropdown content when dropdown button is hovered */
-      .qualities-bar .qualities-dropdown:hover .dropdown-content {
-        display: block;
-      }
 
     </style>
   </head>
@@ -129,7 +24,7 @@
       <div class="profile-dropdown">
         <div class="profile-dropdown-btn">
           <div class="profile-img">
-            <img class="profile-pfp">
+            <img id="profile-pfp">
 
             <i class="fa-solid fa-circle"></i>
           </div>
@@ -148,7 +43,7 @@
           </li>
 
           <li class="profile-dropdown-list-item">
-            <a href="#">
+            <a href="chat.html">
               <i class="fa-regular fa-envelope"></i>
               Inbox
             </a>
