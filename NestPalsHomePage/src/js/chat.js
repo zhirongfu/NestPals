@@ -25,7 +25,6 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 let currentChatUserId = null;
-// Wrap your code to ensure the DOM is fully loaded
   onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
@@ -123,98 +122,103 @@ async function displayChatsTab(chatId){
           }
       });
         searchResults.appendChild(profileDiv);
+        return profileDiv;
       }
       }
 }
-document.addEventListener('DOMContentLoaded', () => {
-  function initMap() {
-    // test func
-    console.log("Google Maps API loaded successfully.");
-    
-  } 
-  //to remove the files if inputed
-  // Reference to the search form and search results containe
-  const searchForm = document.getElementById('userSearchForm');
-  const searchResults = document.getElementById('searchResults');
+document.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  const userUid = params.get('otherUserId');
 
-  searchForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const username = document.getElementById('searchInput').value.trim();
-   // Clear the previous search results
-   const currentUser = auth.currentUser;
-   const currentUserRef = doc(db, "users", currentUser.uid);
-   const currentUserDoc = await getDoc(currentUserRef);
-   const currentUserUsername = currentUserDoc.data().username;
-      
-    if (username && username != currentUserUsername) {
-      // Query Firestore for users with matching usernames
-      const q = query(collection(db, "users"), where("username", "==", username));
-      const querySnapshot = await getDocs(q);
-      const currentuser = auth.currentUser.uid;
-
-      if (!querySnapshot.empty ) {
-        // Iterate over the documents returned by the query
-        querySnapshot.forEach(async (doc) => {
-          // Attempt to get the user's profile picture
-        let imgUrl;
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      if (userUid) {
         try {
-          imgUrl = await getUserProfilePictureUrl(doc.id);
+          const profileDiv = await displayChatsTab(userUid);
+          highlightProfile(profileDiv);
+          createChatBox(userUid);
+          const currentUsername = await getUsername(auth.currentUser.uid);
+          const otherUsername = await getUsername(userUid);
+          await displayChatMsg(userUid, currentUsername, otherUsername);
         } catch (error) {
-            console.log("Error getting profile picture URL:", error);
-            imgUrl = 'path_to_default_image.jpg'; // Fallback image path
-          }
-          const existingProfileDiv = document.getElementById(`${doc.id}`);
-          if (existingProfileDiv){
-            searchResults.removeChild(existingProfileDiv);
-            searchResults.prepend(existingProfileDiv);
-          }
-          else{
-            // Create a new profile bar for each user
-            const profileDiv = document.createElement('div');
-            profileDiv.className = 'user-profile flex items-center p-2';
-            profileDiv.id = `${doc.id}`;
-          
-            
-            // Profile picture
-            const img = document.createElement('img');
-            img.src = imgUrl;
-            img.className = 'h-12 w-12 rounded-full mr-2';
-            profileDiv.appendChild(img);
-            
-            // Username text
-            const text = document.createElement('span');
-            text.className ='username';
-            text.textContent = doc.data().username;
-            profileDiv.appendChild(text);
-
-            // Attach an event listener to the profile bar
-            profileDiv.addEventListener('click', async() => {
-              const currentUsernamePromise = await getUsername(currentuser);
-              const otherUsernamePromise = await getUsername(doc.id);
-              highlightProfile(profileDiv);
-          
-              try {
-                  const currentUsername = currentUsernamePromise;
-                  const otherUsername = otherUsernamePromise;
-                  createChatBox(doc.id);
-                  displayChatMsg(doc.id, currentUsername, otherUsername);
-              } catch (error) {
-                  console.error("Failed to fetch usernames:", error);
-              }
-          });
-            searchResults.appendChild(profileDiv);
-          }})
-          }
-      else{
-        displayNoUserFound();
-        return;
-      }   
+          console.error('Error handling DOMContentLoaded:', error);
+        }
       } else {
-        // Handle the case where no users are found
-        displayNoUserFound();
+        console.error('User UID not found in query parameters');
       }
-    })
+
+      const searchForm = document.getElementById('userSearchForm');
+      const searchResults = document.getElementById('searchResults');
+
+      searchForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const username = document.getElementById('searchInput').value.trim();
+        const currentUser = auth.currentUser;
+        const currentUserRef = doc(db, "users", currentUser.uid);
+        const currentUserDoc = await getDoc(currentUserRef);
+        const currentUserUsername = currentUserDoc.data().username;
+
+        if (username && username != currentUserUsername) {
+          const q = query(collection(db, "users"), where("username", "==", username));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            querySnapshot.forEach(async (doc) => {
+              let imgUrl;
+              try {
+                imgUrl = await getUserProfilePictureUrl(doc.id);
+              } catch (error) {
+                console.log("Error getting profile picture URL:", error);
+                imgUrl = 'path_to_default_image.jpg';
+              }
+
+              const existingProfileDiv = document.getElementById(`${doc.id}`);
+              if (existingProfileDiv) {
+                searchResults.removeChild(existingProfileDiv);
+                searchResults.prepend(existingProfileDiv);
+              } else {
+                const profileDiv = document.createElement('div');
+                profileDiv.className = 'user-profile flex items-center p-2';
+                profileDiv.id = `${doc.id}`;
+
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.className = 'h-12 w-12 rounded-full mr-2';
+                profileDiv.appendChild(img);
+
+                const text = document.createElement('span');
+                text.className = 'username';
+                text.textContent = doc.data().username;
+                profileDiv.appendChild(text);
+
+                profileDiv.addEventListener('click', async () => {
+                  const currentUsernamePromise = getUsername(auth.currentUser.uid);
+                  const otherUsernamePromise = getUsername(doc.id);
+                  highlightProfile(profileDiv);
+
+                  try {
+                    const currentUsername = await currentUsernamePromise;
+                    const otherUsername = await otherUsernamePromise;
+                    createChatBox(doc.id);
+                    displayChatMsg(doc.id, currentUsername, otherUsername);
+                  } catch (error) {
+                    console.error("Failed to fetch usernames:", error);
+                  }
+                });
+
+                searchResults.appendChild(profileDiv);
+              }
+            });
+          } else {
+            displayNoUserFound();
+          }
+        }
+      });
+    } else {
+      console.error('User not authenticated');
+    }
   });
+});
   function highlightProfile(profileDiv) {
     const currentlyActive = document.querySelector('.active-user-profile');
     if (currentlyActive) {

@@ -171,7 +171,6 @@ async function createProfileCard(user) {
 
   // Create an <a> element for the location link
   const locationLink = document.createElement('a');
-  locationLink.href = '#'; // Set the href attribute to '#' for now, you can update it later if needed
   locationLink.className = 'location-link';
 
   const locationIcon = document.createElement('i');
@@ -179,25 +178,23 @@ async function createProfileCard(user) {
   locationLink.appendChild(locationIcon);
   profileItem.appendChild(locationLink);
 
-  // Modify the event listener for the location link to call deleteMapContainer before creating a new map
-locationLink.addEventListener('click', async () => {
-  try {
-      // Call the deleteMapContainer function to remove any existing map container
-      deleteMapContainer();
+  locationLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    openGmap(user);
+})
+  // Create an <a> element for the chatbox logo link
+  const chatboxLink = document.createElement('a');
+  chatboxLink.href = `chat.html?otherUserId=${user.uid}`
+  chatboxLink.className = 'chatboxLink'; 
 
-      // Your existing code for creating the map goes here...
-      // Ensure that the map container is removed when the close button is clicked as well
-      closeButton.addEventListener('click', () => {
-          deleteMapContainer();
-      });
+  const chatIcon = document.createElement('i');
+  chatIcon.className = 'fa-solid fa-comment';
+  chatboxLink.appendChild(chatIcon);
+  profileItem.appendChild(chatboxLink);
 
-  } catch (error) {
-      console.error("Error handling location button click:", error);
-  }
-});
-
-
-  locationLink.addEventListener('click', async () => {
+  return profileItem;
+}
+async function openGmap(user){
     try {
       // Call the deleteMapContainer function to remove any existing map container
       deleteMapContainer();  
@@ -277,27 +274,12 @@ locationLink.addEventListener('click', async () => {
             }
         });
 
-        // Ensure that the map container is removed when the close button is clicked as well
-        closeButton.addEventListener('click', () => {
-          deleteMapContainer();
-        });
     } catch (error) {
         console.error("Error handling location button click:", error);
     }
-});
+};
 
-  // Create an <a> element for the chatbox logo link
-  const chatboxLink = document.createElement('a');
-  chatboxLink.href = 'chat.html';
-  chatboxLink.className = 'chatboxLink'; // Ensure this matches your CSS class for styling
 
-  const chatIcon = document.createElement('i');
-  chatIcon.className = 'fa-solid fa-comment';
-  chatboxLink.appendChild(chatIcon);
-  profileItem.appendChild(chatboxLink);
-
-  return profileItem;
-}
 
 // Function to delete the map container
 function deleteMapContainer() {
