@@ -216,27 +216,27 @@ body {
     font-size: 16px;
     color: #12c155;
   }
-  .chatboxLink {
-    position: absolute; 
-    bottom: 5px; /* Distance from the bottom */
-    right: 75px; /* Distance from the right */
-    font-size: 22px;
-    width: 25px;
-  }
   .location-link {
     position: absolute;
     left: 10px;
     bottom: 6px;
-    font-size: 1.5em; /* Adjust the font size as desired */
+    font-size: 1.5em; 
+    cursor: pointer;
+    color: #1212c1;
   }
-
+  .location-link :hover{
+    color: #12c155;
+  }
   .chatboxLink {
     position: absolute;
     right: 10px;
     bottom: 6px;
     font-size: 1.5em; /* Adjust the font size as desired */
+    width: 25px; /* Add this if you need it */
   }
-
+  .chatboxLink :hover{
+    color: #12c155;
+  }
   .custom-map-container {
       display: flex;
       flex-direction: column-reverse;
@@ -280,39 +280,6 @@ body {
     border-bottom: 1px solid #ccc; /* Bottom border */
   }
 
-  .qualities-bar .qualities-dropdown {
-    display: flex;
-    align-items: center;
-  }
-
-  .qualities-bar .qualities-dropdown .dropdown-btn {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-  }
-
-  .qualities-bar .qualities-dropdown .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #fff; /* Background color of dropdown */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Box shadow for dropdown */
-    z-index: 1;
-  }
-
-  .qualities-bar .qualities-dropdown .dropdown-content label {
-    display: block;
-    padding: 8px 16px;
-  }
-
-  .qualities-bar .qualities-dropdown .dropdown-content label:hover {
-    background-color: #f0f0f0; /* Background color on hover */
-  }
-
-  .qualities-bar .qualities-dropdown .dropdown-content input[type="checkbox"] {
-    margin-right: 8px;
-  }
-
   .qualities-bar .budget-input label {
     margin-right: 10px;
   }
@@ -323,8 +290,57 @@ body {
     border: 1px solid #ccc;
     border-radius: 5px;
   }
-
-  /* Show dropdown content when dropdown button is hovered */
-  .qualities-bar .qualities-dropdown:hover .dropdown-content {
-    display: block;
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin-right: 10px;
+  }
+  
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #677f89;
+    transition: 0.4s;
+    border-radius: 34px;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+  
+  input:checked + .slider {
+    background-color: var(--secondary);
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(26px);
+  }
+  
+  .label-text {
+    margin-left: 60px; 
+    display: flex;
+    align-items: center;
+    height: 34px; 
+    font-size: 16px;
+    vertical-align: middle; /* Ensure vertical alignment */
   }

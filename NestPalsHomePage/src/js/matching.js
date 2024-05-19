@@ -288,20 +288,28 @@ function deleteMapContainer() {
       mapContainer.remove();
   }
 }
-// Function to fetch profiles from Firestore based on optional budget range
-async function fetchProfiles(minBudget = null, maxBudget = null) {
+async function fetchProfiles(minBudget = null, maxBudget = null, smokeFilter = null, cleanFilter = null, petsFilter = null) {
   const profilesRef = collection(db, 'users');
-  // Query for users with a defined non-empty budget
   const budgetQuery = query(profilesRef, where('budget', '!=', ''));
   const querySnapshot = await getDocs(budgetQuery);
   const currentUser = auth.currentUser;
   const profileContainer = document.querySelector('.profile-container');
 
-  // Clear existing profile cards
   profileContainer.innerHTML = '';
 
-  // Filter users based on budget range if both min and max budgets are provided
   let filteredUsers = querySnapshot.docs;
+  if (minBudget !== null && maxBudget == null) {
+    filteredUsers = filteredUsers.filter(doc => {
+      const userData = doc.data();
+      return parseInt(userData.budget) >= minBudget;
+    });
+  }
+  if (minBudget == null && maxBudget !== null) {
+    filteredUsers = filteredUsers.filter(doc => {
+      const userData = doc.data();
+      return parseInt(userData.budget) <= maxBudget;
+    });
+  }
   if (minBudget !== null && maxBudget !== null) {
     filteredUsers = filteredUsers.filter(doc => {
       const userData = doc.data();
@@ -309,37 +317,48 @@ async function fetchProfiles(minBudget = null, maxBudget = null) {
     });
   }
 
-  // Exclude current user's document
+  if (smokeFilter !== null) {
+    filteredUsers = filteredUsers.filter(doc => doc.data().smoking === smokeFilter);
+  }
+  if (cleanFilter !== null) {
+    filteredUsers = filteredUsers.filter(doc => doc.data().cleanliness === cleanFilter);
+  }
+  if (petsFilter !== null) {
+    filteredUsers = filteredUsers.filter(doc => doc.data().pets === petsFilter);
+  }
+
   filteredUsers = filteredUsers.filter(doc => doc.id !== currentUser.uid);
 
-  // Create profile cards for filtered users
-   // Create profile cards for filtered users
-   const profileCards = await Promise.all(filteredUsers.map(async doc => {
-    //await writeMatrix(doc.id); // Ensure the matrix is written before creating the profile card.
-    return createProfileCard({ ...doc.data(), uid: doc.id }); // Then create the profile card.
-}));
-   // Append all profile cards to the container
+  const profileCards = await Promise.all(filteredUsers.map(async doc => {
+    return createProfileCard({ ...doc.data(), uid: doc.id });
+  }));
+
   profileCards.forEach(profileCard => {
-      profileContainer.appendChild(profileCard);
-   });
+    profileContainer.appendChild(profileCard);
+  });
 }
 
-// Event listeners for min and max budget input fields
-document.getElementById('minBudget').addEventListener('input', () => {
+function getFiltersAndFetchProfiles() {
   const minBudget = parseInt(document.getElementById('minBudget').value);
   const maxBudget = parseInt(document.getElementById('maxBudget').value);
-  if (!isNaN(minBudget) && !isNaN(maxBudget)) {
-    fetchProfiles(minBudget, maxBudget);
-  }
-});
+  const smokeFilter = document.getElementById('smokeCheckbox').checked ? 'smoker' : null;
+  const cleanFilter = document.getElementById('cleanlinessCheckbox').checked ? 'neat' : null;
+  const petsFilter = document.getElementById('petsCheckbox').checked ? 'yes' : null;
 
-document.getElementById('maxBudget').addEventListener('input', () => {
-  const minBudget = parseInt(document.getElementById('minBudget').value);
-  const maxBudget = parseInt(document.getElementById('maxBudget').value);
-  if (!isNaN(minBudget) && !isNaN(maxBudget)) {
-    fetchProfiles(minBudget, maxBudget);
-  }
-});
+  fetchProfiles(
+    !isNaN(minBudget) ? minBudget : null,
+    !isNaN(maxBudget) ? maxBudget : null,
+    smokeFilter,
+    cleanFilter,
+    petsFilter
+  );
+}
+
+document.getElementById('minBudget').addEventListener('input', getFiltersAndFetchProfiles);
+document.getElementById('maxBudget').addEventListener('input', getFiltersAndFetchProfiles);
+document.getElementById('smokeCheckbox').addEventListener('change', getFiltersAndFetchProfiles);
+document.getElementById('cleanlinessCheckbox').addEventListener('change', getFiltersAndFetchProfiles);
+document.getElementById('petsCheckbox').addEventListener('change', getFiltersAndFetchProfiles);
 
 
 /*  onAuthStateChanged(auth, (user) => {

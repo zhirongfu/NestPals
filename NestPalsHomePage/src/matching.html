@@ -67,14 +67,23 @@
       </div>
     </nav>
     <div class="qualities-bar">
-      <div class="qualities-dropdown">
-        <button class="dropdown-btn">Qualities</button>
-        <div class="dropdown-content">
-          <label><input type="checkbox" id="smokeCheckbox">Does not smoke</label>
-          <label><input type="checkbox" id="cleanlinessCheckbox">Is cleanliness oriented</label>
-          <label><input type="checkbox" id="petsCheckbox">Comfortable with pets</label>
-        </div>
-      </div>
+      
+      <div> Filters:</div>
+      <label class="switch">
+        <span class="label-text">Smoker?</span>
+        <input type="checkbox" id="smokeCheckbox">
+        <span class="slider round"></span>
+      </label>
+      <label class="switch">
+        <span class="label-text">Clean?</span>
+        <input type="checkbox" id="cleanlinessCheckbox">
+        <span class="slider round"></span>
+      </label>
+      <label class="switch">
+        <span class="label-text">Pets?</span>
+        <input type="checkbox" id="petsCheckbox">
+        <span class="slider round"></span>
+      </label>
       <div class="budget-input">
         <label for="minBudget">Min Budget:</label>
         <input type="number" id="minBudget" placeholder="Min Budget">
