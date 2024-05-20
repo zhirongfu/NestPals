@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs,setDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Heap } from 'heap-js';
 import { use } from "react";
 
 const firebaseConfig = {
@@ -26,6 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let profileDropdownList = document.querySelector(".profile-dropdown-list");
     let btn = document.querySelector(".profile-dropdown-btn");
     let classList = profileDropdownList.classList;
+    const aiMatchLink = document.getElementById('ai-match-link');
+    aiMatchLink.addEventListener('click',function(){
+      activateAIMatch();
+    })
   
     // Define the toggle function
     const toggle = () => classList.toggle("active");
@@ -359,6 +364,81 @@ document.getElementById('maxBudget').addEventListener('input', getFiltersAndFetc
 document.getElementById('smokeCheckbox').addEventListener('change', getFiltersAndFetchProfiles);
 document.getElementById('cleanlinessCheckbox').addEventListener('change', getFiltersAndFetchProfiles);
 document.getElementById('petsCheckbox').addEventListener('change', getFiltersAndFetchProfiles);
+function euclideanDistance(vec1, vec2) {
+  if (vec1.length !== vec2.length) {
+    throw new Error('Vectors must be of same length');
+  }
+  let sum = 0;
+  for (let i = 0; i < vec1.length; i++) {
+    sum += Math.pow(vec1[i] - vec2[i], 2);
+  }
+  return Math.sqrt(sum);
+}
+
+async function activateAIMatch() {
+  const currentUser = auth.currentUser;
+  const currentUserDocRef = doc(db, 'users', currentUser.uid);
+  const currentUserDoc = await getDoc(currentUserDocRef);
+
+  if (!currentUserDoc.exists() || !currentUserDoc.data().datamatrix) {
+    console.error('Current user or datamatrix does not exist');
+    return;
+  }
+
+  const currentUserMatrix = currentUserDoc.data().datamatrix;
+
+  const profilesRef = collection(db, 'users');
+  const querySnapshot = await getDocs(profilesRef); 
+
+  /*const users = [];
+
+  querySnapshot.forEach(doc => {
+    if (doc.id !== currentUser.uid && doc.data().datamatrix) {
+      // Create an object literal and push it into the users array
+      users.push({
+        id: doc.id,
+        data: doc.data(),
+        distance: euclideanDistance(currentUserMatrix, doc.data().datamatrix)
+      });
+    }
+  });
+
+  // Sort users by distance and get the top 10 closest users
+  users.sort((a, b) => a.distance - b.distance);
+  const top10Users = users.slice(0, 10);
+  */
+
+  const minHeap = new Heap((a, b) => b.distance - a.distance);
+
+  querySnapshot.forEach(doc => {
+    if (doc.id !== currentUser.uid && doc.data().datamatrix) {
+      const distance = euclideanDistance(currentUserMatrix, doc.data().datamatrix);
+      minHeap.push({ id: doc.id, data: doc.data(), distance: distance });
+
+      if (minHeap.size() > 10) {
+        minHeap.pop();
+      }
+    }
+  });
+
+  const top10Users = [];
+  while (minHeap.size() > 0) {
+    top10Users.push(minHeap.pop());
+  }
+
+  const profileContainer = document.querySelector('.profile-container');
+  profileContainer.innerHTML = '';
+
+  const profileCards = await Promise.all(top10Users.map(async user => {
+    return createProfileCard({ ...user.data, uid: user.id });
+  }));
+
+  profileCards.forEach(profileCard => {
+    profileContainer.appendChild(profileCard);
+  });
+
+  //console.log('Top 10 closest users based on datamatrix:', top10Users);
+}
 
 
 /*  onAuthStateChanged(auth, (user) => {
