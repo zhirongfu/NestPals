@@ -17,13 +17,13 @@ Confirm it's properly installed by running 'git version' in an open command prom
 ![image](https://github.com/MikeK-003/NestPals/assets/102551944/e53ed27e-5a6a-4304-81ef-5ae8a3f19abe)
 
 3. You have the choice of downloading all the files as-is, or you can copy the git repository link.
-![image](https://github.com/MikeK-003/NestPals/assets/102551944/8d971172-1927-4588-b742-a3ca8961086e)
+![image](https://github.com/zhirongfu/NestPals/assets/73326132/97f5d2a6-18aa-4220-8c8a-54b263fbdd94)
 
-4. In Command Prompt, navigate to an empty folder of your choice to install the project in, and type
-`git clone https://github.com/MikeK-003/NestPals.git` using the copied link.
+4.Create an empty folder and copy the path to that folder ![image](https://github.com/zhirongfu/NestPals/assets/73326132/c6c0102c-56f4-46db-95cd-2d973ab7217f)
 
-6. If installed correctly, git should handle the downloading of all files into the specified folder by itself.
-![image](https://github.com/MikeK-003/NestPals/assets/102551944/03802a63-91b4-4a12-abb7-cdb626aead84)
+5. In Command Prompt, navigate to that folder with cd `path to that folder(that you copied)` ![image](https://github.com/zhirongfu/NestPals/assets/73326132/42e34e7e-f948-422d-9733-534568ab3326)
+
+6. Now that you are in that folder do `git clone https://github.com/zhirongfu/NestPals.git` ![image](https://github.com/zhirongfu/NestPals/assets/73326132/da9ee13a-8afa-4df3-93dc-aafc97ed3ebe)
 
 # Installing vite
 The next step is to be able to properly run the app using Vite.
