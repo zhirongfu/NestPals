@@ -29,7 +29,8 @@ Confirm it's properly installed by running 'git version' in an open command prom
 # Installing vite
 Our last step is to install vite. We can choose to install it globally or locally in the project folder. (It is best pratice to install it locally within the project folder since different versions might be used for different projects, and the package.json file will dictate the correct version)
 
-6. To do this we do `npm install vite --save-dev` in the current directory we are in ![image](https://github.com/zhirongfu/NestPals/assets/73326132/353df4c0-893e-43c6-927e-287eaa2bb12f)
+6. To do this we do `npm install vite --save-dev` in the current directory we are in alternatively you can simply just do `npm install` (as vite is already listed as a dev dependency in our .json files ![Screenshot 2024-05-21 015458](https://github.com/zhirongfu/NestPals/assets/73326132/5f751459-3ae3-421d-8673-510ed1a07e83)
+
 7. We can check if it's installed with `npm list vite` inside that directory(which will return the version) ![image](https://github.com/zhirongfu/NestPals/assets/73326132/632fbc15-90dc-4691-a1ff-18827dbdf23d)
 8. Now we run `npm start` in the current directory which would prompt us with a link to a local server ![image](https://github.com/zhirongfu/NestPals/assets/73326132/38ec9f06-447e-41e0-a7fc-127b8ff313cd)
 9. Finally we can follow that link with Ctrl+Click or by simply copy and pasting the link to a browser to open up the web app! ![image](https://github.com/zhirongfu/NestPals/assets/73326132/b484443d-ab91-4878-84de-2d92867a9b98)
