@@ -108,6 +108,14 @@ body {
   font-size: 0.5rem;
   color: var(--green);
 }
+.username {
+ margin-left: 10px;
+ max-width: 55px;
+ overflow: hidden; /* Hide any overflowing text */
+ text-overflow: ellipsis; /* Show ellipsis (...) for overflowing text */
+ white-space: nowrap; /* Prevent text from wrapping to the next line */
+ display: inline-block; /* Ensure that the element respects max-width */
+}
 
 .profile-dropdown-btn span {
   margin: 0 0.5rem;

@@ -2,7 +2,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion, setDoc,Timestamp } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { createElement } from 'react';
 import { Loader } from "@googlemaps/js-api-loader";
 import axios from 'axios';
 const GoogleMapsApiKey = 'AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU';
@@ -24,7 +23,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
-let currentChatUserId = null;
   onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {

@@ -68,6 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 await fetchProfiles();// Initial fetch of profiles with no budget filter
                 const userName = docSnap.data().username;
                 document.querySelector('.username').textContent = userName;
+                const profileDropdownBtn = document.querySelector('.profile-dropdown-btn');
+                await adjustFontSizeToFit(profileDropdownBtn, 55);
             } else {
                 console.log('No user data available');
             }
@@ -93,6 +95,15 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'signin.html';
     }
 });
+async function adjustFontSizeToFit(container, maxWidth) {
+  const element = container.querySelector('.username');
+  let fontSize = parseInt(window.getComputedStyle(element).fontSize);
+
+  while (element.scrollWidth > maxWidth && fontSize > 0) {
+    fontSize--;
+    element.style.fontSize = fontSize + 'px';
+  }
+}
 /*async function writeMatrix(userid){
   const userDocRef = doc(db, "users", userid);
   const userSnap = await getDoc(userDocRef);
