@@ -23,6 +23,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
+let activeListeners = {};  // Object to keep track of active listeners
   onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
@@ -126,11 +127,17 @@ async function displayChatsTab(chatId){
       }
       }
 }
-function setupChatListener(otherUserId, currentUserId) {
+async function setupChatListener(otherUserId, currentUserId) {
   const docId = [currentUserId, otherUserId].sort().join('_');
   const docRef = doc(db, "conversations", docId);
 
-  onSnapshot(docRef, async (doc) => {
+  // Remove existing listener for the conversation if it exists
+  if (activeListeners[docId]) {
+    activeListeners[docId]();  // This will unsubscribe from the listener
+  }
+
+  // Set up a new listener for the conversation
+  const unsubscribe = onSnapshot(docRef, async (doc) => {
     if (doc.exists()) {
       const currentUsername = await getUsername(currentUserId);
       const otherUsername = await getUsername(otherUserId);
@@ -139,6 +146,9 @@ function setupChatListener(otherUserId, currentUserId) {
       console.log("No messages found or document does not exist.");
     }
   });
+
+  // Store the unsubscribe function to be able to remove the listener later
+  activeListeners[docId] = unsubscribe;
 }
 document.addEventListener('DOMContentLoaded', async () => {
   // Retrieve the UID from session storage
@@ -150,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (userUid) {
         try {
           // Set up the onSnapshot listener
-          setupChatListener(userUid, auth.currentUser.uid);
+          await setupChatListener(userUid, auth.currentUser.uid);
 
           const profileDiv = await displayChatsTab(userUid);
           highlightProfile(profileDiv);
@@ -221,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     displayChatMsg(doc.id, currentUsername, otherUsername);
 
                     // Update the onSnapshot listener for the new chat
-                    setupChatListener(doc.id, auth.currentUser.uid);
+                    await setupChatListener(doc.id, auth.currentUser.uid);
                   } catch (error) {
                     console.error("Failed to fetch usernames:", error);
                   }
