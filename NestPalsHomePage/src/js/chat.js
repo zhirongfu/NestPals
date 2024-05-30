@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion, setDoc,Timestamp, onSnapshot } from 'firebase/firestore';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { Loader } from "@googlemaps/js-api-loader";
 import axios from 'axios';
 const GoogleMapsApiKey = 'AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU';
@@ -143,7 +143,7 @@ function setupChatListener(otherUserId, currentUserId) {
 document.addEventListener('DOMContentLoaded', async () => {
   // Retrieve the UID from session storage
   const userUid = sessionStorage.getItem('otherUserId');
-  console.log(userUid); // For debugging: check if the UID is retrieved correctly
+  //console.log(userUid); // For debugging: check if the UID is retrieved correctly
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -240,6 +240,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 });
+function deleteFile(picture) {
+  // Create a reference to the file to delete
+  const fileRef = storageRef(storage, picture );
+
+  // Delete the file
+  deleteObject(fileRef).then(() => {
+    console.log('File deleted successfully');
+  }).catch((error) => {
+    console.error('Error deleting file:', error);
+  });
+}
   function highlightProfile(profileDiv) {
     const currentlyActive = document.querySelector('.active-user-profile');
     if (currentlyActive) {
@@ -373,7 +384,14 @@ function createChatBox(otheruserid) {
   // Create a new handler function that captures the current `otheruserid`
   submitButton.clickHandler = () => sendMsg(otheruserid);
   submitButton.addEventListener('click', submitButton.clickHandler);
-
+  // Add event listener for Enter key
+  const forminput = chatBox.querySelector('.conversation-form-input');
+  forminput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) { // Check if Enter key is pressed without Shift
+      event.preventDefault(); // Prevent default newline behavior
+      sendMsg(otheruserid);
+    }
+  });
   // Ensure button is part of the chatBox
   chatBox.appendChild(submitButton);
 
