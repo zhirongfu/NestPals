@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion, setDoc,Timestamp } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion, setDoc,Timestamp, onSnapshot } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { Loader } from "@googlemaps/js-api-loader";
 import axios from 'axios';
@@ -44,7 +44,9 @@ const storage = getStorage(app);
                 const url = await getDownloadURL(fileRef);
                 document.querySelector('.profile-img').src = url; // Update the src attribute of the img element
             } else {
-                console.log("Document or filePath field missing");
+              const defaultFileRef = storageRef(storage, 'pfp/DefaultNestPalsPfp7361/Screenshot 2024-05-12 194811.png');
+              const defaultUrl = await getDownloadURL(defaultFileRef);
+              document.querySelector('.profile-img').src = defaultUrl; // Update the src attribute of the img element
             }
             //loads the chats already in place from order docu
             const orderRef = doc(db, "chatorder", user.uid);
@@ -124,14 +126,32 @@ async function displayChatsTab(chatId){
       }
       }
 }
+function setupChatListener(otherUserId, currentUserId) {
+  const docId = [currentUserId, otherUserId].sort().join('_');
+  const docRef = doc(db, "conversations", docId);
+
+  onSnapshot(docRef, async (doc) => {
+    if (doc.exists()) {
+      const currentUsername = await getUsername(currentUserId);
+      const otherUsername = await getUsername(otherUserId);
+      await displayChatMsg(otherUserId, currentUsername, otherUsername);
+    } else {
+      console.log("No messages found or document does not exist.");
+    }
+  });
+}
 document.addEventListener('DOMContentLoaded', async () => {
-  const params = new URLSearchParams(window.location.search);
-  const userUid = params.get('otherUserId');
+  // Retrieve the UID from session storage
+  const userUid = sessionStorage.getItem('otherUserId');
+  console.log(userUid); // For debugging: check if the UID is retrieved correctly
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       if (userUid) {
         try {
+          // Set up the onSnapshot listener
+          setupChatListener(userUid, auth.currentUser.uid);
+
           const profileDiv = await displayChatsTab(userUid);
           highlightProfile(profileDiv);
           createChatBox(userUid);
@@ -142,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           console.error('Error handling DOMContentLoaded:', error);
         }
       } else {
-        console.error('User UID not found in query parameters');
+        console.error('User UID not found in session storage');
       }
 
       const searchForm = document.getElementById('userSearchForm');
@@ -199,6 +219,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const otherUsername = await otherUsernamePromise;
                     createChatBox(doc.id);
                     displayChatMsg(doc.id, currentUsername, otherUsername);
+
+                    // Update the onSnapshot listener for the new chat
+                    setupChatListener(doc.id, auth.currentUser.uid);
                   } catch (error) {
                     console.error("Failed to fetch usernames:", error);
                   }
@@ -574,76 +597,77 @@ async function sendMsgToFirestore(currentUser,otherUserId,msgToSend){
   await storeChatOrderToFirebase(currentUser,otherUserId);
 }
 //Helper function for displayign msgs
-async function displayChatMsg(otherUserId,currentUsername,otherUsername)
-{
+async function displayChatMsg(otherUserId, currentUsername, otherUsername) {
   const conversationMsgDiv = document.getElementById('conversationMessages');
-  conversationMsgDiv.innerHTML = '';
   const currentuser = auth.currentUser.uid;
   const docId = [currentuser, otherUserId].sort().join('_');
-  const docRef = doc(db,"conversations",docId);  
-  const msgDoc = await getDoc(docRef);
-  const docData = msgDoc.data();
-  if (docData && docData.messages) {
-    // Loop through the messages array
-  for(const message of docData.messages) {
-    const messageParts = message.split(':');  // Split the message string at the colon
-    if (messageParts.length >= 3) {
-      const username = messageParts[0];
-      const timestamp = messageParts[1];
-      const text = messageParts.slice(2).join(':'); // Join back the rest of the message in case it contains colons
-      if(currentUsername == username){
-        //checks if the msg could be a path to an img
-        if (text.startsWith(`pictures/${docId}`)){
-          const ownImageBox = document.createElement('div');
-          const fileRef =  storageRef(storage,text);
-          const imageUrl = await getDownloadURL(fileRef);
-          ownImageBox.classList = 'ownImageBox';
-          const ownImg = document.createElement('img');//creates img elemnt to append
-          ownImg.src = imageUrl;
-          ownImg.classList = 'ownImage';
-          ownImageBox.appendChild(ownImg);
-          conversationMsgDiv.appendChild(ownImageBox);//appends the img to the msg box
+  const docRef = doc(db, "conversations", docId);
+
+  const scrollToBottom = () => {
+    conversationMsgDiv.scrollTop = conversationMsgDiv.scrollHeight;
+  };
+
+  onSnapshot(docRef, async (doc) => {
+    if (doc.exists()) {
+      const messages = doc.data().messages;
+      const messageElements = [];
+
+      // Clear the conversation message div
+      conversationMsgDiv.innerHTML = '';
+
+      for (const message of messages) {
+        const messageParts = message.split(':');
+        if (messageParts.length >= 3) {
+          const username = messageParts[0];
+          const timestamp = messageParts[1];
+          const text = messageParts.slice(2).join(':');
+          if (text.startsWith(`pictures/${docId}`)) {
+            const fileRef = storageRef(storage, text);
+            const imageUrl = await getDownloadURL(fileRef);
+            const imageBox = document.createElement('div');
+            const img = document.createElement('img');
+            img.src = imageUrl;
+
+            if (currentUsername === username) {
+              imageBox.classList = 'ownImageBox';
+              img.classList = 'ownImage';
+            } else {
+              imageBox.classList = 'otherImageBox';
+              img.classList = 'otherImage';
+            }
+
+            imageBox.appendChild(img);
+            messageElements.push(imageBox);
+          } else {
+            const messageBox = document.createElement('div');
+            const messageText = document.createElement('div');
+            messageText.textContent = text;
+
+            if (currentUsername === username) {
+              messageBox.classList = 'ownMessageBox';
+              messageText.classList = 'ownMessage';
+            } else {
+              messageBox.classList = 'otherMessageBox';
+              messageText.classList = 'otherMessage';
+            }
+
+            messageBox.appendChild(messageText);
+            messageElements.push(messageBox);
+          }
         }
-      else{
-        const ownMessageBox = document.createElement('div');
-        ownMessageBox.classList = 'ownMessageBox';
-        const ownMessage = document.createElement('div');
-        ownMessage.classList = 'ownMessage';
-        ownMessage.textContent = text;
-        ownMessageBox.appendChild(ownMessage);
-        conversationMsgDiv.appendChild(ownMessageBox);
       }
+
+      // Append all message elements in the correct order
+      for (const element of messageElements) {
+        conversationMsgDiv.appendChild(element);
       }
-      else{
-        if (text.startsWith(`pictures/${docId}`)){
-          const ownImageBox = document.createElement('div');
-          const fileRef =  storageRef(storage,text);
-          const imageUrl = await getDownloadURL(fileRef);
-          ownImageBox.classList = 'otherImageBox';
-          const ownImg = document.createElement('img');//creates img elemnt to append
-          ownImg.src = imageUrl;
-          ownImageBox.appendChild(ownImg);
-          conversationMsgDiv.appendChild(ownImageBox);//appends the img to the msg box
-        }
-        else{
-          const otherMessageBox = document.createElement('div');
-          otherMessageBox.classList = 'otherMessageBox';
-          const otherMessage = document.createElement('div');
-          otherMessage.classList = 'otherMessage';
-          otherMessage.textContent = text;
-          otherMessageBox.appendChild(otherMessage);
-          conversationMsgDiv.appendChild(otherMessageBox);
-        }
-      }
+
+      // Ensure scrolling to the bottom after all elements are appended
       scrollToBottom();
     } else {
-      // Handle cases where the message might not be in the expected format
-      console.log(`Message ${index + 1} is not in the expected format.`);
+      console.log("No messages found or document does not exist.");
     }
-  };
-} else {
-  console.log("No messages found or document does not exist.");
-}
+  });
 }
 // Helper function to get a username by user ID
 async function getUsername(userId) {
@@ -654,10 +678,6 @@ async function getUsername(userId) {
   } else {
       throw new Error(`User with ID ${userId} does not exist.`);
   }
-}
-function scrollToBottom() {
-  const conversationMessages = document.getElementById('conversationMessages');
-  conversationMessages.scrollTop = conversationMessages.scrollHeight;
 }
 async function storeChatOrderToFirebase(docId,otherUserDocId){
   //makes another document in db to store the order of the chats

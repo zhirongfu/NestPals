@@ -138,33 +138,27 @@ async function createProfileCard(user) {
 
   const img = document.createElement('img');
   img.className = "pfp";
-  // Assuming user has a uid field
   if (user.uid) {
-      try {
-          const docRef = doc(db, "pfp", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists() && docSnap.data().filePath) {
-              const filePath = docSnap.data().filePath;
-              const fileRef = storageRef(storage, filePath);
-
-              // Use getDownloadURL to fetch the actual URL
-              const url = await getDownloadURL(fileRef);
-              img.src = url;
-          } else {
-              /*if(storageRef(storage, 'pfp/DefaultNestPalsPfp7361/Screenshot 2024-05-12 194811.png')){
-                console.log('doc exists');
-              }*/
-              const defaultfileref = storageRef(storage, 'pfp/DefaultNestPalsPfp7361/Screenshot 2024-05-12 194811.png');//path to deafult pfp
-              const defaulturl = await getDownloadURL(defaultfileref);
-              img.src = defaulturl; // sts the img src to defalt hardcoded pfp in fb
-          }
-      } catch (error) {
-          console.error("Error fetching image URL:", error);
-          img.src = 'default-avatar.png'; // Fallback image on error
+    try {
+      const docRef = doc(db, "pfp", user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().filePath) {
+        const filePath = docSnap.data().filePath;
+        const fileRef = storageRef(storage, filePath);
+        const url = await getDownloadURL(fileRef);
+        img.src = url;
+      } else {
+        const defaultfileref = storageRef(storage, 'pfp/DefaultNestPalsPfp7361/Screenshot 2024-05-12 194811.png');
+        const defaulturl = await getDownloadURL(defaultfileref);
+        img.src = defaulturl;
       }
+    } catch (error) {
+      console.error("Error fetching image URL:", error);
+      img.src = 'default-avatar.png';
+    }
   } else {
-      console.error("User UID is undefined.");
-      img.src = 'default-avatar.png'; // Fallback image if user UID is undefined
+    console.error("User UID is undefined.");
+    img.src = 'default-avatar.png';
   }
 
   profileItem.appendChild(img);
@@ -184,7 +178,6 @@ async function createProfileCard(user) {
 
   profileItem.appendChild(detailsContainer);
 
-  // Create an <a> element for the location link
   const locationLink = document.createElement('a');
   locationLink.className = 'location-link';
 
@@ -196,19 +189,37 @@ async function createProfileCard(user) {
   locationLink.addEventListener('click', (event) => {
     event.preventDefault();
     openGmap(user);
-})
+  });
+
   // Create an <a> element for the chatbox logo link
   const chatboxLink = document.createElement('a');
-  chatboxLink.href = `chat.html?otherUserId=${user.uid}`
+  chatboxLink.href = '#'; // Set the href to # to prevent default behavior
   chatboxLink.className = 'chatboxLink'; 
+  chatboxLink.dataset.uid = user.uid; // Store the UID in a data attribute
 
   const chatIcon = document.createElement('i');
   chatIcon.className = 'fa-solid fa-comment';
   chatboxLink.appendChild(chatIcon);
   profileItem.appendChild(chatboxLink);
 
+  // Add click event listener to handle navigation
+  chatboxLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    const uid = chatboxLink.dataset.uid;
+    navigateToChat(uid);
+  });
+
   return profileItem;
 }
+
+// Function to navigate to chat page with the UID
+function navigateToChat(uid) {
+  // Store the UID in session storage
+  sessionStorage.setItem('otherUserId', uid);
+  // Navigate to the chat page
+  window.location.href = 'chat.html';
+}
+
 async function openGmap(user){
     try {
       // Call the deleteMapContainer function to remove any existing map container
