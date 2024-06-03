@@ -4,19 +4,14 @@ import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { Loader } from "@googlemaps/js-api-loader";
 import axios from 'axios';
-const GoogleMapsApiKey = 'AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU';
-const loader = new Loader({
-    apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
-    version: "weekly",
-    libraries: ["places"]
-});
+const GoogleMapsApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
 const firebaseConfig = {
-  apiKey: "AIzaSyCVrsMKR6f35_JQGglt5bCJaI_wpQkLWWU",
-  authDomain: "nestpals-backend.firebaseapp.com",
-  projectId: "nestpals-backend",
-  storageBucket: "nestpals-backend.appspot.com",
-  messagingSenderId: "377954426735",
-  appId: "1:377954426735:web:92eaef2c3160067572529a"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
